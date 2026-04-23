@@ -1,0 +1,16 @@
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="brand_start">#030A14</color>
+    <color name="brand_end">#081B30</color>
+    <color name="panel_bg">#CC143554</color>
+    <color name="panel_stroke">#66EE781F</color>
+    <color name="text_primary">#F3F4F6</color>
+    <color name="text_secondary">#C4D4E4</color>
+    <color name="button_primary_start">#194779</color>
+    <color name="button_primary_end">#EE781F</color>
+    <color name="button_secondary_start">#143554</color>
+    <color name="button_secondary_end">#194779</color>
+    <color name="button_stop_start">#7F1D1D</color>
+    <color name="button_stop_end">#991B1B</color>
+</resources>
