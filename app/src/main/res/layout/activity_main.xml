@@ -606,17 +606,6 @@
                 android:textSize="14sp" />
 
             <TextView
-                android:id="@+id/tvModeStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_status_chip"
-                android:padding="12dp"
-                android:text="@string/mode_current_default"
-                android:textColor="@color/text_primary"
-                android:textSize="12sp" />
-
-            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -959,5 +948,17 @@
             style="@style/FuncRound"
             android:text="@string/func_light3" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvPacketHex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:fontFamily="monospace"
+        android:textColor="#88C0D0E0"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -29,6 +29,7 @@ import kotlin.math.roundToInt
 class MainActivity : AppCompatActivity() {
 
     private lateinit var tvStatus: TextView
+    private lateinit var tvPacketHex: TextView
     private lateinit var btnSelectDevice: Button
     private lateinit var btnConnect: Button
     private lateinit var btnDisconnect: Button
@@ -39,7 +40,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSidebarToggle: Button
     private lateinit var panelSidebar: View
     private lateinit var guideLeftEnd: Guideline
-    private lateinit var tvModeStatus: TextView
 
     private lateinit var drivePad: ThrottleSteeringView
     private lateinit var joystickRight: JoystickView
@@ -94,7 +94,14 @@ class MainActivity : AppCompatActivity() {
         bindViews()
         applyLogoVibrancy()
         usbSerialController = UsbSerialController(this) { message ->
-            runOnUiThread { updateStatus(message) }
+            runOnUiThread {
+                updateStatus(message)
+                if (message.startsWith("已连接")) {
+                    startStreaming()
+                } else if (message.startsWith("已断开") || message.startsWith("USB 设备已拔出") || message.startsWith("USB 发送失败")) {
+                    stopStreaming()
+                }
+            }
         }
         uvcController = UvcPreviewController(this, cameraView) { message ->
             runOnUiThread { updateStatus(message) }
@@ -106,6 +113,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun bindViews() {
         tvStatus = findViewById(R.id.tvStatus)
+        tvPacketHex = findViewById(R.id.tvPacketHex)
         btnSelectDevice = findViewById(R.id.btnSelectDevice)
         btnConnect = findViewById(R.id.btnConnect)
         btnDisconnect = findViewById(R.id.btnDisconnect)
@@ -116,7 +124,6 @@ class MainActivity : AppCompatActivity() {
         btnSidebarToggle = findViewById(R.id.btnSidebarToggle)
         panelSidebar = findViewById(R.id.panelSidebar)
         guideLeftEnd = findViewById(R.id.guideLeftEnd)
-        tvModeStatus = findViewById(R.id.tvModeStatus)
 
         cameraView = findViewById(R.id.camera_view)
         imgLogo = findViewById(R.id.imgLogo)
@@ -279,7 +286,6 @@ class MainActivity : AppCompatActivity() {
         }
         updateStatus("连接中...")
         usbSerialController.requestPermissionAndConnect(device)
-        startStreaming()
     }
 
     private fun disconnect() {
@@ -318,6 +324,8 @@ class MainActivity : AppCompatActivity() {
         frame[6] = toAxisByte(if (abs(axisX) < deadZone) 0f else axisX)
         frame[7] = toAxisByte(if (abs(axisJoystickY) < deadZone) 0f else axisJoystickY)
         frame[8] = FRAME_TAIL.toByte()
+        val hex = frame.joinToString(" ") { String.format("%02X", it) }
+        runOnUiThread { tvPacketHex.text = hex }
         ioExecutor.execute {
             usbSerialController.write(frame)
         }
