@@ -1,6 +1,6 @@
 {
-  "versionCode": 5,
-  "versionName": "1.4",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.4/app-debug.apk",
-  "releaseNotes": "修复自动更新下载后文件找不到的问题\n- 使用 DownloadManager.Query 获取真实文件路径\n- 三重降级策略确保 APK 文件可定位"
+  "versionCode": 6,
+  "versionName": "1.4.1",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.4.1/app-debug.apk",
+  "releaseNotes": "优化界面\n- containerTopRight 改为自适应高度"
 }
