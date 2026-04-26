@@ -308,14 +308,16 @@
     <LinearLayout
         android:id="@+id/panelSidebar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="14dp"
         android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
         android:alpha="0.80"
         android:background="@drawable/bg_panel"
         android:elevation="16dp"
         android:orientation="vertical"
         android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideLeftEnd"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnSidebarToggle">
@@ -340,93 +342,106 @@
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/btnVideoMenu"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="@string/menu_video_connect"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp">
 
-        <Button
-            android:id="@+id/btnUsbDiag"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="@string/menu_log"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnConfig"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="@string/config_button"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+                <Button
+                    android:id="@+id/btnVideoMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:text="@string/menu_video_connect"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/btnProtocol"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="@string/protocol_button"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+                <Button
+                    android:id="@+id/btnUsbDiag"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:text="@string/menu_log"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/btnSelectDevice"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_button_primary"
-            android:text="@string/select_device"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+                <Button
+                    android:id="@+id/btnConfig"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:text="@string/config_button"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/btnConnect"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_primary"
-            android:text="@string/connect"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+                <Button
+                    android:id="@+id/btnProtocol"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:text="@string/protocol_button"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/btnDisconnect"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_stop"
-            android:text="@string/disconnect"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp" />
+                <Button
+                    android:id="@+id/btnSelectDevice"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="@string/select_device"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/btnCheckUpdate"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="@string/check_update"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="12sp" />
+                <Button
+                    android:id="@+id/btnConnect"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="@string/connect"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnDisconnect"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_button_stop"
+                    android:text="@string/disconnect"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnCheckUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_button_secondary"
+                    android:text="@string/check_update"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 
     <FrameLayout
