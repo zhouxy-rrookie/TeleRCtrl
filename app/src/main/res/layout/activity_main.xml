@@ -475,9 +475,8 @@
     <FrameLayout
         android:id="@+id/containerTopRight"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="6dp"
-        app:layout_constraintBottom_toTopOf="@id/guideMainTop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guideLeftEnd"
         app:layout_constraintTop_toTopOf="parent"
