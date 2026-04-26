@@ -81,39 +81,7 @@
             android:layout_margin="20dp"
             android:background="@drawable/bg_video_corner_rb" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
-            android:layout_marginTop="18dp"
-            android:layout_gravity="top|start"
-            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_tactical_strip"
-                android:paddingLeft="12dp"
-                android:paddingTop="6dp"
-                android:paddingRight="12dp"
-                android:paddingBottom="6dp"
-                android:text="@string/video_overlay_left"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_tactical_strip"
-                android:paddingLeft="12dp"
-                android:paddingTop="6dp"
-                android:paddingRight="12dp"
-                android:paddingBottom="6dp"
-                android:text="@string/video_overlay_right"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp" />
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="22dp"
@@ -312,19 +280,30 @@
             android:textSize="11sp" />
     </FrameLayout>
 
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="12dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/logo"
+        app:layout_constraintStart_toEndOf="@id/guideLeftEnd"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-medium"
         android:text="@string/remote_title"
         android:textColor="@color/text_primary"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/guideLeftEnd"
+        app:layout_constraintTop_toBottomOf="@id/imgLogo" />
 
     <TextView
         android:id="@+id/tvSubtitle"
@@ -333,14 +312,14 @@
         android:layout_marginTop="3dp"
         android:text="@string/remote_subtitle"
         android:textColor="@color/text_secondary"
-        android:textSize="13sp"
+        android:textSize="12sp"
         app:layout_constraintStart_toStartOf="@id/tvTitle"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
     <View
         android:layout_width="88dp"
         android:layout_height="2dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:background="@drawable/bg_badge"
         app:layout_constraintStart_toStartOf="@id/tvTitle"
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
@@ -349,7 +328,7 @@
         android:id="@+id/btnSidebarToggle"
         android:layout_width="44dp"
         android:layout_height="44dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/bg_button_secondary"
         android:text="@string/sidebar_open"
         android:textAllCaps="false"
@@ -371,8 +350,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="14dp"
         android:layout_marginTop="10dp"
+        android:alpha="0.80"
         android:background="@drawable/bg_panel"
-        android:elevation="8dp"
+        android:elevation="16dp"
         android:orientation="vertical"
         android:padding="14dp"
         app:layout_constraintEnd_toStartOf="@id/guideLeftEnd"
@@ -433,6 +413,17 @@
             android:textSize="14sp" />
 
         <Button
+            android:id="@+id/btnConfig"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/config_button"
+            android:textAllCaps="false"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <Button
             android:id="@+id/btnSelectDevice"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -472,8 +463,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:layout_marginEnd="14dp"
+        android:alpha="0.78"
         android:background="@drawable/bg_panel"
-        android:elevation="8dp"
+        android:elevation="4dp"
         android:orientation="vertical"
         android:padding="12dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -540,8 +532,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="14dp"
         android:layout_marginBottom="14dp"
+        android:alpha="0.78"
         android:background="@drawable/bg_panel"
-        android:elevation="10dp"
+        android:elevation="4dp"
         android:orientation="vertical"
         android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -589,8 +582,9 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="14dp"
         android:layout_marginBottom="14dp"
+        android:alpha="0.78"
         android:background="@drawable/bg_panel"
-        android:elevation="10dp"
+        android:elevation="4dp"
         android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

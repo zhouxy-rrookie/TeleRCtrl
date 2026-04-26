@@ -5,6 +5,10 @@
 - Focused verification tasks exist at `:app:lintDebug`, `:app:testDebugUnitTest`, and `:app:connectedDebugAndroidTest`.
 - `./gradlew testDebugUnitTest` currently succeeds with `NO-SOURCE`; there are no checked-in tests under `app/src/test` or `app/src/androidTest` right now.
 
+## Build Environment
+- Gradle wrapper: `9.0.0`, AGP `8.5.2`, Kotlin `1.9.24`, `compileSdk = 34`, `minSdk = 24`, `targetSdk = 34`.
+- Source/target compatibility is Java 17 (`jvmTarget = "17"`).
+
 ## Repo Shape
 - Single Android app module: `:app`.
 - `MainActivity` is the real hub for Bluetooth permissions, paired-device selection, socket IO, joystick streaming, mode selection, sidebar state, and `UvcPreviewController` wiring. There is no separate service or data layer to update instead.

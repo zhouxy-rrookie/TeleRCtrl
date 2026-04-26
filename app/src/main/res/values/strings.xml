@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">蓝牙机器人遥控</string>
+    <string name="app_name">USB 机器人遥控</string>
     <string name="status_format">状态: %1$s</string>
     <string name="status_default">状态: 未连接</string>
     <string name="remote_title">Robot Drive Console</string>
-    <string name="remote_subtitle">蓝牙实时遥控台</string>
+    <string name="remote_subtitle">USB 实时遥控台</string>
     <string name="panel_connection">连接管理</string>
     <string name="panel_control">运动控制</string>
     <string name="select_device">选择设备</string>
@@ -59,4 +59,7 @@
     <string name="joystick_right_title">右摇杆 · 左右横移</string>
     <string name="sidebar_open">MENU</string>
     <string name="sidebar_close">CLOSE</string>
+    <string name="config_button">配置</string>
+    <string name="config_title">配置矩阵</string>
+    <string name="config_send">发送</string>
 </resources>

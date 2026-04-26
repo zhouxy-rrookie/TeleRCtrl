@@ -1,39 +1,31 @@
 package com.ek.blectr
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothSocket
+import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.drawable.GradientDrawable
+import android.widget.ImageView
 import android.hardware.usb.UsbDevice
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Guideline
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import java.io.IOException
-import java.io.OutputStream
 import java.util.Locale
-import java.util.UUID
 import java.util.concurrent.Executors
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
-
-    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    private var socket: BluetoothSocket? = null
-    private var outputStream: OutputStream? = null
 
     private lateinit var tvStatus: TextView
     private lateinit var btnSelectDevice: Button
@@ -42,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnVideoMenu: Button
     private lateinit var btnModeSelect: Button
     private lateinit var btnUsbDiag: Button
+    private lateinit var btnConfig: Button
     private lateinit var btnSidebarToggle: Button
     private lateinit var panelSidebar: View
     private lateinit var guideLeftEnd: Guideline
@@ -50,11 +43,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drivePad: ThrottleSteeringView
     private lateinit var joystickRight: JoystickView
 
+    private lateinit var imgLogo: ImageView
     private lateinit var cameraView: android.view.TextureView
     private lateinit var uvcController: UvcPreviewController
+    private lateinit var usbSerialController: UsbSerialController
 
     private val ioExecutor = Executors.newSingleThreadExecutor()
-    private var selectedDevice: BluetoothDevice? = null
+    private var selectedDevice: UsbDevice? = null
     private var axisX: Float = 0f
     private var axisY: Float = 0f
     private var axisYaw: Float = 0f
@@ -68,16 +63,16 @@ class MainActivity : AppCompatActivity() {
     private val motionHandler = Handler(Looper.getMainLooper())
     private var sidebarExpanded: Boolean = false
     private var selectedMode: Int = 1
+    private val cellStates = IntArray(12)
 
     companion object {
-        private val SPP_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-        private const val REQ_BT_PERMISSIONS = 1001
         private const val MOTION_STREAM_INTERVAL_MS = 50L
         private const val AXIS_SCALE = 100
         private const val FRAME_HEADER_A = 0xAA
         private const val FRAME_HEADER_B = 0x55
         private const val FRAME_TAIL = 0x0D
         private const val MODE_MARKER = 0x7F
+        private const val CONFIG_HEADER = 0xCC
     }
 
     private val motionStreamRunnable = object : Runnable {
@@ -95,14 +90,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         bindViews()
+        applyLogoVibrancy()
+        usbSerialController = UsbSerialController(this) { message ->
+            runOnUiThread { updateStatus(message) }
+        }
         uvcController = UvcPreviewController(this, cameraView) { message ->
             runOnUiThread { updateStatus(message) }
         }
         bindClickListeners()
-        requestBluetoothPermissionsIfNeeded()
         setSidebarExpanded(false)
         updateModeStatus()
         updateStatus("未连接")
+        checkForUpdates()
     }
 
     private fun bindViews() {
@@ -113,12 +112,14 @@ class MainActivity : AppCompatActivity() {
         btnVideoMenu = findViewById(R.id.btnVideoMenu)
         btnModeSelect = findViewById(R.id.btnModeSelect)
         btnUsbDiag = findViewById(R.id.btnUsbDiag)
+        btnConfig = findViewById(R.id.btnConfig)
         btnSidebarToggle = findViewById(R.id.btnSidebarToggle)
         panelSidebar = findViewById(R.id.panelSidebar)
         guideLeftEnd = findViewById(R.id.guideLeftEnd)
         tvModeStatus = findViewById(R.id.tvModeStatus)
 
         cameraView = findViewById(R.id.camera_view)
+        imgLogo = findViewById(R.id.imgLogo)
         drivePad = findViewById(R.id.drivePad)
         joystickRight = findViewById(R.id.joystickRight)
     }
@@ -130,21 +131,14 @@ class MainActivity : AppCompatActivity() {
         applyGamePadMotion(btnDisconnect, 1.04f)
         applyGamePadMotion(btnModeSelect, 1.04f)
         applyGamePadMotion(btnUsbDiag, 1.04f)
+        applyGamePadMotion(btnConfig, 1.04f)
         applyGamePadMotion(btnSidebarToggle, 1.04f)
 
         btnSelectDevice.setOnClickListener {
-            if (!hasBluetoothPermissions()) {
-                requestBluetoothPermissionsIfNeeded()
-                return@setOnClickListener
-            }
-            showPairedDevicesDialog()
+            showUsbSerialDevicesDialog()
         }
 
         btnConnect.setOnClickListener {
-            if (!hasBluetoothPermissions()) {
-                requestBluetoothPermissionsIfNeeded()
-                return@setOnClickListener
-            }
             connectSelectedDevice()
         }
 
@@ -156,6 +150,7 @@ class MainActivity : AppCompatActivity() {
         }
         btnModeSelect.setOnClickListener { showModeSelectDialog() }
         btnUsbDiag.setOnClickListener { showUsbDiagnosticsDialog() }
+        btnConfig.setOnClickListener { showConfigDialog() }
         btnSidebarToggle.setOnClickListener { setSidebarExpanded(!sidebarExpanded) }
 
         configureSegmentGroup(
@@ -204,9 +199,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onRelease() {
-                drivePadActive = false
-                axisY = 0f
                 axisYaw = 0f
+                if (axisY == 0f) {
+                    drivePadActive = false
+                }
                 stopMotionStreamingIfIdle()
             }
         }
@@ -214,11 +210,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        usbSerialController.onStart()
         uvcController.onStart()
     }
 
     override fun onStop() {
         stopMotionStreaming(forceStopCommand = false)
+        usbSerialController.onStop()
         uvcController.onStop()
         super.onStop()
     }
@@ -227,73 +225,31 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         stopMotionStreaming(forceStopCommand = false)
         uvcController.onDestroy()
+        usbSerialController.onDestroy()
         disconnect()
         ioExecutor.shutdownNow()
     }
 
-    private fun requestBluetoothPermissionsIfNeeded() {
-        val needed = mutableListOf<String>()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                needed += Manifest.permission.BLUETOOTH_SCAN
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                needed += Manifest.permission.BLUETOOTH_CONNECT
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                needed += Manifest.permission.ACCESS_FINE_LOCATION
-            }
-        }
-
-        if (needed.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, needed.toTypedArray(), REQ_BT_PERMISSIONS)
-        }
-    }
-
-    private fun hasBluetoothPermissions(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-        } else {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun showPairedDevicesDialog() {
-        val adapter = bluetoothAdapter
-        if (adapter == null) {
-            updateStatus("设备不支持蓝牙")
+    private fun showUsbSerialDevicesDialog() {
+        val devices = usbSerialController.getAvailableSerialDevices()
+        if (devices.isEmpty()) {
+            updateStatus("未检测到 USB 串口设备")
             return
         }
 
-        if (!adapter.isEnabled) {
-            updateStatus("请先打开手机蓝牙")
-            return
-        }
-
-        val paired = adapter.bondedDevices.toList()
-        if (paired.isEmpty()) {
-            updateStatus("没有已配对设备，请先在系统蓝牙中配对")
-            return
-        }
-
-        val display = paired.map { device ->
-            "${device.name ?: "未知设备"} (${device.address})"
+        val display = devices.map { device ->
+            "${device.deviceName} (VID:${formatHex(device.vendorId)} PID:${formatHex(device.productId)})"
         }.toTypedArray()
 
         AlertDialog.Builder(this)
-            .setTitle("选择蓝牙设备")
+            .setTitle("选择 USB 串口设备")
             .setItems(display) { _, which ->
-                selectedDevice = paired[which]
-                updateStatus("已选择: ${paired[which].name ?: paired[which].address}")
+                selectedDevice = devices[which]
+                updateStatus("已选择: ${devices[which].deviceName}")
             }
             .show()
     }
 
-    @SuppressLint("MissingPermission")
     private fun connectSelectedDevice() {
         val device = selectedDevice
         if (device == null) {
@@ -302,44 +258,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateStatus("连接中...")
-        ioExecutor.execute {
-            try {
-                bluetoothAdapter?.cancelDiscovery()
-                val newSocket = device.createRfcommSocketToServiceRecord(SPP_UUID)
-                newSocket.connect()
+        usbSerialController.requestPermissionAndConnect(device)
+    }
 
-                socket = newSocket
-                outputStream = newSocket.outputStream
-
-                runOnUiThread {
-                    updateStatus("已连接: ${device.name ?: device.address}")
-                }
-            } catch (e: IOException) {
-                runOnUiThread {
-                    updateStatus("连接失败: ${e.message ?: "未知错误"}")
-                }
-                disconnect()
-            }
-        }
+    private fun disconnect() {
+        usbSerialController.disconnect()
+        updateStatus("已断开连接")
     }
 
     private fun sendPacket(packet: ByteArray) {
-        val os = outputStream
-        if (os == null) {
+        if (!usbSerialController.isConnected()) {
             updateStatus("未连接，无法发送指令")
             return
         }
 
         ioExecutor.execute {
-            try {
-                os.write(packet)
-                os.flush()
-            } catch (e: IOException) {
-                runOnUiThread {
-                    updateStatus("发送失败: ${e.message ?: "未知错误"}")
-                }
-                disconnect()
-            }
+            usbSerialController.write(packet)
         }
     }
 
@@ -373,6 +307,10 @@ class MainActivity : AppCompatActivity() {
         return "${device.deviceName} (VID:$vendorId PID:$productId)"
     }
 
+    private fun formatHex(value: Int): String {
+        return String.format(Locale.US, "%04X", value and 0xFFFF)
+    }
+
     private fun showModeSelectDialog() {
         val modeLabels = (1..15).map { mode -> "模式 $mode" }.toTypedArray()
         AlertDialog.Builder(this)
@@ -397,25 +335,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun disconnect() {
-        ioExecutor.execute {
-            try {
-                outputStream?.close()
-            } catch (_: IOException) {
-            }
-
-            try {
-                socket?.close()
-            } catch (_: IOException) {
-            }
-
-            outputStream = null
-            socket = null
-
-            runOnUiThread {
-                updateStatus("已断开连接")
-            }
+    private fun applyLogoVibrancy() {
+        val cm = ColorMatrix().apply {
+            setSaturation(1.6f)
         }
+        imgLogo.colorFilter = ColorMatrixColorFilter(cm)
     }
 
     private fun applyGamePadMotion(view: View, pressedScale: Float) {
@@ -557,11 +481,144 @@ class MainActivity : AppCompatActivity() {
         return sum.toByte()
     }
 
+    private fun showConfigDialog() {
+        val darkGreen = Color.parseColor("#2D7D2D")
+        val lightGreen = Color.parseColor("#55BB55")
+        val yellowGreen = Color.parseColor("#99CC33")
+        val defaultColors = intArrayOf(
+            darkGreen, lightGreen, darkGreen,
+            lightGreen, yellowGreen, lightGreen,
+            darkGreen, lightGreen, yellowGreen,
+            lightGreen, darkGreen, lightGreen,
+        )
+        val stateColors = intArrayOf(
+            Color.parseColor("#FF4444"),
+            Color.parseColor("#4488FF"),
+            Color.parseColor("#888888"),
+        )
+        val stateLabels = arrayOf("R1", "R2", "OFF")
+        val stateTextColors = intArrayOf(
+            Color.WHITE,
+            Color.WHITE,
+            Color.WHITE,
+        )
+        val borderColor = Color.parseColor("#66EE781F")
+        val density = resources.displayMetrics.density
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 24, 24, 24)
+        }
+
+        fun GradientDrawable.applyFill(color: Int) {
+            setColor(color)
+        }
+
+        fun TextView.updateAppearance(index: Int) {
+            val state = cellStates[index]
+            val bg = background as GradientDrawable
+            if (state == 0) {
+                bg.applyFill(defaultColors[index])
+                setTextColor(defaultColors[index])
+                text = ""
+            } else {
+                val si = state - 1
+                bg.applyFill(stateColors[si])
+                setTextColor(stateTextColors[si])
+                text = stateLabels[si]
+            }
+        }
+
+        val cellViews = Array(12) { index ->
+            val bg = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 8f * density
+                setStroke((2f * density).toInt(), borderColor)
+                setColor(defaultColors[index])
+            }
+            TextView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(0, (140 * density).toInt(), 1f).apply {
+                    setMargins((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
+                }
+                gravity = Gravity.CENTER
+                textSize = 16f
+                background = bg
+                setOnClickListener {
+                    cellStates[index] = (cellStates[index] + 1) % 4
+                    updateAppearance(index)
+                }
+            }
+        }
+
+        for (row in 0 until 4) {
+            val rowLayout = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+            }
+            for (col in 0 until 3) {
+                rowLayout.addView(cellViews[row * 3 + col])
+            }
+            root.addView(rowLayout)
+        }
+
+        val sendButton = Button(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = (16 * density).toInt()
+            }
+            text = getString(R.string.config_send)
+            textSize = 16f
+            setOnClickListener {
+                sendConfigPacket()
+            }
+        }
+        root.addView(sendButton)
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.config_title))
+            .setView(root)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    private fun sendConfigPacket() {
+        val payload = IntArray(3)
+        for (i in 0 until 12) {
+            val byteIndex = i / 4
+            val shift = (3 - (i % 4)) * 2
+            payload[byteIndex] = payload[byteIndex] or (cellStates[i] shl shift)
+        }
+        val frame = ByteArray(4)
+        frame[0] = CONFIG_HEADER.toByte()
+        frame[1] = payload[0].toByte()
+        frame[2] = payload[1].toByte()
+        frame[3] = payload[2].toByte()
+        sendPacket(frame)
+        updateStatus("配置已发送")
+    }
+
     private fun updateStatus(msg: String) {
         tvStatus.text = getString(R.string.status_format, msg)
     }
 
     private fun updateModeStatus() {
         tvModeStatus.text = getString(R.string.mode_current_format, selectedMode)
+    }
+
+    private fun checkForUpdates() {
+        UpdateManager(this).checkForUpdate { info ->
+            if (info == null) return@checkForUpdate
+            runOnUiThread {
+                AlertDialog.Builder(this)
+                    .setTitle("发现新版本 ${info.versionName}")
+                    .setMessage(info.releaseNotes)
+                    .setPositiveButton("立即更新") { _, _ ->
+                        UpdateManager(this).downloadAndInstall(info)
+                    }
+                    .setNegativeButton("稍后", null)
+                    .show()
+            }
+        }
     }
 }

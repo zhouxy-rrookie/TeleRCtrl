@@ -135,6 +135,16 @@ class ThrottleSteeringView @JvmOverloads constructor(
         canvas.drawLine(outerRect.left + dp(12f), centerY - dp(12f), outerRect.left + dp(12f), centerY + dp(12f), tickPaint)
         canvas.drawLine(outerRect.right - dp(12f), centerY - dp(12f), outerRect.right - dp(12f), centerY + dp(12f), tickPaint)
 
+        val steps = 5
+        val tickStepY = maxOffsetY / steps
+        for (i in 1..steps) {
+            val yAbove = centerY - tickStepY * i
+            val yBelow = centerY + tickStepY * i
+            val tickW = if (i % 2 == 0) dp(14f) else dp(10f)
+            canvas.drawLine(centerX - tickW, yAbove, centerX + tickW, yAbove, tickPaint)
+            canvas.drawLine(centerX - tickW, yBelow, centerX + tickW, yBelow, tickPaint)
+        }
+
         updateKnobRect()
         canvas.drawRoundRect(
             knobRect.left + dp(2f),
@@ -184,7 +194,6 @@ class ThrottleSteeringView @JvmOverloads constructor(
 
     private fun resetKnob() {
         knobCenterX = centerX
-        knobCenterY = centerY
     }
 
     private fun updateKnobRect() {
