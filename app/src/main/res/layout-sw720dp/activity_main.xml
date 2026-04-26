@@ -81,8 +81,6 @@
             android:layout_margin="20dp"
             android:background="@drawable/bg_video_corner_rb" />
 
-
-
         <LinearLayout
             android:layout_width="22dp"
             android:layout_height="184dp"
@@ -109,62 +107,32 @@
                 android:layout_width="14dp"
                 android:layout_height="2dp"
                 android:background="@drawable/bg_tactical_tick" />
-
-            <Space
-                android:layout_width="1dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
             <View
                 android:layout_width="10dp"
                 android:layout_height="2dp"
                 android:background="@drawable/bg_tactical_tick" />
-
-            <Space
-                android:layout_width="1dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
             <View
                 android:layout_width="14dp"
                 android:layout_height="2dp"
                 android:background="@drawable/bg_tactical_tick" />
-
-            <Space
-                android:layout_width="1dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
             <View
                 android:layout_width="10dp"
                 android:layout_height="2dp"
                 android:background="@drawable/bg_tactical_tick" />
-
-            <Space
-                android:layout_width="1dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
             <View
                 android:layout_width="14dp"
                 android:layout_height="2dp"
                 android:background="@drawable/bg_tactical_tick" />
-
-            <Space
-                android:layout_width="1dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
             <View
                 android:layout_width="10dp"
                 android:layout_height="2dp"
                 android:background="@drawable/bg_tactical_tick" />
-
-            <Space
-                android:layout_width="1dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
             <View
                 android:layout_width="14dp"
                 android:layout_height="2dp"
@@ -194,19 +162,16 @@
                 android:layout_height="30dp"
                 android:layout_gravity="top|start"
                 android:background="@drawable/bg_target_corner_lt" />
-
             <View
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="top|end"
                 android:background="@drawable/bg_target_corner_rt" />
-
             <View
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="bottom|start"
                 android:background="@drawable/bg_target_corner_lb" />
-
             <View
                 android:layout_width="30dp"
                 android:layout_height="30dp"
@@ -247,11 +212,7 @@
                 android:text="@string/video_live"
                 android:textColor="@color/text_primary"
                 android:textSize="12sp" />
-
-            <Space
-                android:layout_width="10dp"
-                android:layout_height="1dp" />
-
+            <Space android:layout_width="10dp" android:layout_height="1dp" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -282,26 +243,25 @@
 
     <ImageView
         android:id="@+id/imgLogo"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="14dp"
         android:scaleType="fitCenter"
         android:src="@drawable/logo"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintHeight_percent="0.12"
         app:layout_constraintStart_toEndOf="@id/guideLeftEnd"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.12" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="12dp"
         android:fontFamily="sans-serif-medium"
         android:text="@string/remote_title"
         android:textColor="@color/text_primary"
-        android:textSize="22sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/guideLeftEnd"
         app:layout_constraintTop_toBottomOf="@id/imgLogo" />
@@ -310,31 +270,31 @@
         android:id="@+id/tvSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="4dp"
         android:text="@string/remote_subtitle"
         android:textColor="@color/text_secondary"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/tvTitle"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
     <View
-        android:layout_width="88dp"
+        android:layout_width="100dp"
         android:layout_height="2dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/bg_badge"
         app:layout_constraintStart_toStartOf="@id/tvTitle"
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
 
     <Button
         android:id="@+id/btnSidebarToggle"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_button_secondary"
         android:text="@string/sidebar_open"
         android:textAllCaps="false"
         android:textColor="@color/text_primary"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/tvTitle"
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
 
@@ -343,33 +303,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.20" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideMainTop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.36" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideBottomSplit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.55" />
+        app:layout_constraintGuide_percent="0.18" />
 
     <LinearLayout
         android:id="@+id/panelSidebar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="14dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="14dp"
         android:alpha="0.80"
         android:background="@drawable/bg_panel"
         android:elevation="16dp"
         android:orientation="vertical"
-        android:padding="14dp"
+        android:padding="16dp"
         app:layout_constraintEnd_toStartOf="@id/guideLeftEnd"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnSidebarToggle">
@@ -384,104 +330,102 @@
             android:paddingBottom="5dp"
             android:text="@string/panel_tag_ops"
             android:textColor="@color/text_primary"
-            android:textSize="10sp" />
+            android:textSize="11sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:text="@string/menu_title"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/btnVideoMenu"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="12dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="14dp"
             android:background="@drawable/bg_button_secondary"
             android:text="@string/menu_video_connect"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnModeSelect"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_button_secondary"
             android:text="@string/mode_select"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnUsbDiag"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_button_secondary"
             android:text="@string/menu_log"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnConfig"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_button_secondary"
             android:text="@string/config_button"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnSelectDevice"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="18dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/bg_button_primary"
             android:text="@string/select_device"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnConnect"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_button_primary"
             android:text="@string/connect"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnDisconnect"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_button_stop"
             android:text="@string/disconnect"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
     </LinearLayout>
 
     <FrameLayout
         android:id="@+id/containerTopRight"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="6dp"
-        app:layout_constraintBottom_toTopOf="@id/guideMainTop"
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="14dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/guideLeftEnd"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.34">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:id="@+id/keypadMatrix"
@@ -491,84 +435,36 @@
             android:background="@drawable/bg_panel"
             android:elevation="2dp"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/keyMatrix1"
-                    style="@style/KeypadCell"
-                    android:text="1" />
-
-                <TextView
-                    android:id="@+id/keyMatrix2"
-                    style="@style/KeypadCell"
-                    android:text="2" />
-
-                <TextView
-                    android:id="@+id/keyMatrix3"
-                    style="@style/KeypadCell"
-                    android:text="3" />
-
-                <TextView
-                    android:id="@+id/keyMatrixA"
-                    style="@style/KeypadCell"
-                    android:text="A" />
+                <TextView android:id="@+id/keyMatrix1" style="@style/KeypadCell.Tablet" android:text="1" />
+                <TextView android:id="@+id/keyMatrix2" style="@style/KeypadCell.Tablet" android:text="2" />
+                <TextView android:id="@+id/keyMatrix3" style="@style/KeypadCell.Tablet" android:text="3" />
+                <TextView android:id="@+id/keyMatrixA" style="@style/KeypadCell.Tablet" android:text="A" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/keyMatrix4"
-                    style="@style/KeypadCell"
-                    android:text="4" />
-
-                <TextView
-                    android:id="@+id/keyMatrix5"
-                    style="@style/KeypadCell"
-                    android:text="5" />
-
-                <TextView
-                    android:id="@+id/keyMatrix6"
-                    style="@style/KeypadCell"
-                    android:text="6" />
-
-                <TextView
-                    android:id="@+id/keyMatrixB"
-                    style="@style/KeypadCell"
-                    android:text="B" />
+                <TextView android:id="@+id/keyMatrix4" style="@style/KeypadCell.Tablet" android:text="4" />
+                <TextView android:id="@+id/keyMatrix5" style="@style/KeypadCell.Tablet" android:text="5" />
+                <TextView android:id="@+id/keyMatrix6" style="@style/KeypadCell.Tablet" android:text="6" />
+                <TextView android:id="@+id/keyMatrixB" style="@style/KeypadCell.Tablet" android:text="B" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/keyMatrix7"
-                    style="@style/KeypadCell"
-                    android:text="7" />
-
-                <TextView
-                    android:id="@+id/keyMatrix8"
-                    style="@style/KeypadCell"
-                    android:text="8" />
-
-                <TextView
-                    android:id="@+id/keyMatrix9"
-                    style="@style/KeypadCell"
-                    android:text="9" />
-
-                <TextView
-                    android:id="@+id/keyMatrixC"
-                    style="@style/KeypadCell"
-                    android:text="C" />
+                <TextView android:id="@+id/keyMatrix7" style="@style/KeypadCell.Tablet" android:text="7" />
+                <TextView android:id="@+id/keyMatrix8" style="@style/KeypadCell.Tablet" android:text="8" />
+                <TextView android:id="@+id/keyMatrix9" style="@style/KeypadCell.Tablet" android:text="9" />
+                <TextView android:id="@+id/keyMatrixC" style="@style/KeypadCell.Tablet" android:text="C" />
             </LinearLayout>
         </LinearLayout>
 
@@ -580,7 +476,7 @@
             android:background="@drawable/bg_panel"
             android:elevation="6dp"
             android:orientation="vertical"
-            android:padding="12dp"
+            android:padding="14dp"
             android:visibility="gone">
 
             <TextView
@@ -593,27 +489,37 @@
                 android:paddingBottom="5dp"
                 android:text="@string/panel_tag_telemetry"
                 android:textColor="@color/text_primary"
-                android:textSize="10sp" />
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/bg_status_chip"
-                android:padding="12dp"
+                android:padding="14dp"
                 android:text="@string/status_default"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/tvModeStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_status_chip"
+                android:padding="14dp"
+                android:text="@string/mode_current_default"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/bg_status_chip"
                 android:padding="12dp"
-                android:text="@string/mode_current_default"
+                android:text="@string/telemetry_chip_one"
                 android:textColor="@color/text_primary"
                 android:textSize="12sp" />
 
@@ -622,50 +528,38 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_status_chip"
-                android:padding="10dp"
-                android:text="@string/telemetry_chip_one"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_status_chip"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:text="@string/telemetry_chip_two"
                 android:textColor="@color/text_primary"
-                android:textSize="11sp" />
+                android:textSize="12sp" />
         </LinearLayout>
 
         <Button
             android:id="@+id/btnToggleTelemetry"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="top|end"
-            android:layout_margin="4dp"
+            android:layout_margin="6dp"
             android:background="@drawable/bg_button_secondary"
             android:text="T"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
     </FrameLayout>
 
     <LinearLayout
         android:id="@+id/panelDrive"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginBottom="14dp"
         android:alpha="0.78"
         android:background="@drawable/bg_panel"
         android:elevation="4dp"
         android:orientation="vertical"
-        android:padding="10dp"
+        android:padding="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guideBottomSplit"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/guideMainTop">
+        app:layout_constraintStart_toStartOf="parent">
 
         <TextView
             android:layout_width="wrap_content"
@@ -677,15 +571,15 @@
             android:paddingBottom="5dp"
             android:text="@string/panel_tag_drive"
             android:textColor="@color/text_primary"
-            android:textSize="10sp" />
+            android:textSize="11sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:text="@string/joystick_left_title"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -693,31 +587,28 @@
             android:layout_marginTop="4dp"
             android:text="@string/joystick_left_hint"
             android:textColor="@color/text_secondary"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
 
         <com.ek.blectr.ThrottleSteeringView
             android:id="@+id/drivePad"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="10dp"
+            android:layout_height="300dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_drive_zone" />
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/panelControl"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="248dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="14dp"
         android:alpha="0.78"
         android:background="@drawable/bg_panel"
         android:elevation="4dp"
-        android:padding="10dp"
+        android:padding="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/guideBottomSplit"
-        app:layout_constraintTop_toTopOf="@id/guideMainTop">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
             android:id="@+id/tvControlTag"
@@ -730,7 +621,7 @@
             android:paddingBottom="5dp"
             android:text="@string/panel_tag_control"
             android:textColor="@color/text_primary"
-            android:textSize="10sp"
+            android:textSize="11sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -738,10 +629,10 @@
             android:id="@+id/tvControlTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:text="@string/control_title"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp"
+            android:textSize="13sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvControlTag" />
 
@@ -749,7 +640,7 @@
             android:id="@+id/switchStack"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="14dp"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -760,16 +651,15 @@
                 android:layout_height="wrap_content"
                 android:text="@string/switch_target_title"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginTop="6dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_toggle_group"
                 android:orientation="horizontal"
                 android:padding="1dp">
-
                 <TextView
                     android:id="@+id/switchChassis"
                     android:layout_width="0dp"
@@ -779,13 +669,8 @@
                     android:gravity="center"
                     android:text="@string/switch_target_chassis"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#55EE781F" />
-
+                    android:textSize="14sp" />
+                <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#55EE781F" />
                 <TextView
                     android:id="@+id/switchTask"
                     android:layout_width="0dp"
@@ -795,25 +680,24 @@
                     android:gravity="center"
                     android:text="@string/switch_target_task"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="14dp"
                 android:text="@string/switch_channel_title"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginTop="6dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_toggle_group"
                 android:orientation="horizontal"
                 android:padding="1dp">
-
                 <TextView
                     android:id="@+id/switchChannel1"
                     android:layout_width="0dp"
@@ -823,13 +707,8 @@
                     android:gravity="center"
                     android:text="@string/switch_channel_1"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#55EE781F" />
-
+                    android:textSize="14sp" />
+                <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#55EE781F" />
                 <TextView
                     android:id="@+id/switchChannel2"
                     android:layout_width="0dp"
@@ -839,25 +718,24 @@
                     android:gravity="center"
                     android:text="@string/switch_channel_2"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="14dp"
                 android:text="@string/switch_zone_title"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginTop="6dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_toggle_group"
                 android:orientation="horizontal"
                 android:padding="1dp">
-
                 <TextView
                     android:id="@+id/switchZone1"
                     android:layout_width="0dp"
@@ -867,13 +745,8 @@
                     android:gravity="center"
                     android:text="@string/switch_zone_1"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#55EE781F" />
-
+                    android:textSize="14sp" />
+                <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#55EE781F" />
                 <TextView
                     android:id="@+id/switchZone2"
                     android:layout_width="0dp"
@@ -883,13 +756,8 @@
                     android:gravity="center"
                     android:text="@string/switch_zone_2"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#55EE781F" />
-
+                    android:textSize="14sp" />
+                <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#55EE781F" />
                 <TextView
                     android:id="@+id/switchZone3"
                     android:layout_width="0dp"
@@ -899,7 +767,7 @@
                     android:gravity="center"
                     android:text="@string/switch_zone_3"
                     android:textColor="@color/toggle_segment_text"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -907,21 +775,20 @@
             android:id="@+id/tvRightStickLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="18dp"
             android:text="@string/joystick_right_title"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp"
+            android:textSize="13sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/switchStack" />
 
         <com.ek.blectr.JoystickView
             android:id="@+id/joystickRight"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_joystick_shell"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvRightStickLabel" />

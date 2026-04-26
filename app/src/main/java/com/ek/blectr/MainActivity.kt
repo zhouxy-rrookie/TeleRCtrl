@@ -432,7 +432,7 @@ class MainActivity : AppCompatActivity() {
         panelSidebar.visibility = if (expanded) View.VISIBLE else View.GONE
 
         val params = guideLeftEnd.layoutParams as ConstraintLayout.LayoutParams
-        params.guidePercent = if (expanded) 0.18f else 0.02f
+        params.guidePercent = if (expanded) 0.20f else 0.03f
         guideLeftEnd.layoutParams = params
 
         btnSidebarToggle.text = if (expanded) getString(R.string.sidebar_close) else getString(R.string.sidebar_open)
