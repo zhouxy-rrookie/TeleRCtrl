@@ -77,25 +77,13 @@ class UpdateManager(private val context: Context) {
             override fun onReceive(ctx: Context, intent: Intent) {
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
                 if (id != downloadId) return
-                val downloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                if (downloadsDir == null) {
-                    Toast.makeText(context, "存储不可用", Toast.LENGTH_SHORT).show()
-                    ctx.unregisterReceiver(this)
-                    return
-                }
-                val file = File(downloadsDir, fileName)
-                if (!file.exists()) {
-                    Toast.makeText(context, "下载文件未找到", Toast.LENGTH_SHORT).show()
-                    ctx.unregisterReceiver(this)
-                    return
-                }
-                val apkUri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    file,
-                )
-                installApk(apkUri)
                 ctx.unregisterReceiver(this)
+                val apkUri = resolveDownloadedFile(downloadManager, downloadId, fileName)
+                if (apkUri != null) {
+                    installApk(apkUri)
+                } else {
+                    Toast.makeText(ctx, "下载文件未找到", Toast.LENGTH_SHORT).show()
+                }
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -104,6 +92,43 @@ class UpdateManager(private val context: Context) {
             @Suppress("UnspecifiedRegisterReceiverFlag")
             context.registerReceiver(receiver, filter)
         }
+    }
+
+    private fun resolveDownloadedFile(
+        downloadManager: DownloadManager,
+        downloadId: Long,
+        fileName: String,
+    ): Uri? {
+        try {
+            val uri = downloadManager.getUriForDownloadedFile(downloadId)
+            if (uri != null) return uri
+        } catch (_: Exception) { }
+
+        try {
+            val query = DownloadManager.Query().setFilterById(downloadId)
+            val cursor = downloadManager.query(query)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    @Suppress("DEPRECATION")
+                    val localUri = it.getString(it.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
+                    if (!localUri.isNullOrEmpty()) {
+                        val file = Uri.parse(localUri)?.let { u -> u.path?.let { p -> File(p) } }
+                        if (file?.exists() == true) {
+                            return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) { }
+
+        val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        if (dir != null) {
+            val file = File(dir, fileName)
+            if (file.exists()) {
+                return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            }
+        }
+        return null
     }
 
     private fun installApk(uri: Uri) {
