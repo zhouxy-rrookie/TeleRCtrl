@@ -91,6 +91,7 @@ class ThrottleSteeringView @JvmOverloads constructor(
     private var knobWidth = 0f
     private var knobHeight = 0f
     private var cornerRadius = 0f
+    private var targetKnobY = 0f
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -104,6 +105,7 @@ class ThrottleSteeringView @JvmOverloads constructor(
         maxOffsetX = (outerRect.width() - knobWidth) / 2f - dp(10f)
         maxOffsetY = (outerRect.height() - knobHeight) / 2f - dp(14f)
         cornerRadius = dp(28f)
+        targetKnobY = centerY
         resetKnob()
     }
 
@@ -189,11 +191,13 @@ class ThrottleSteeringView @JvmOverloads constructor(
 
     private fun updateKnob(x: Float, y: Float) {
         knobCenterX = x.coerceIn(centerX - maxOffsetX, centerX + maxOffsetX)
-        knobCenterY = y.coerceIn(centerY - maxOffsetY, centerY + maxOffsetY)
+        targetKnobY = y.coerceIn(centerY - maxOffsetY, centerY + maxOffsetY)
+        knobCenterY += (targetKnobY - knobCenterY) * 0.38f
     }
 
     private fun resetKnob() {
         knobCenterX = centerX
+        targetKnobY = knobCenterY
     }
 
     private fun updateKnobRect() {
