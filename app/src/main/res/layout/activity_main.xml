@@ -457,74 +457,182 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/panelTelemetry"
+    <FrameLayout
+        android:id="@+id/containerTopRight"
         android:layout_width="230dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:layout_marginEnd="14dp"
-        android:alpha="0.78"
-        android:background="@drawable/bg_panel"
-        android:elevation="4dp"
-        android:orientation="vertical"
-        android:padding="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_panel_tag"
-            android:paddingLeft="10dp"
-            android:paddingTop="5dp"
-            android:paddingRight="10dp"
-            android:paddingBottom="5dp"
-            android:text="@string/panel_tag_telemetry"
-            android:textColor="@color/text_primary"
-            android:textSize="10sp" />
-
-        <TextView
-            android:id="@+id/tvStatus"
+        <LinearLayout
+            android:id="@+id/keypadMatrix"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_status_chip"
+            android:alpha="0.78"
+            android:background="@drawable/bg_panel"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/keyMatrix1"
+                    style="@style/KeypadCell"
+                    android:text="1" />
+
+                <TextView
+                    android:id="@+id/keyMatrix2"
+                    style="@style/KeypadCell"
+                    android:text="2" />
+
+                <TextView
+                    android:id="@+id/keyMatrix3"
+                    style="@style/KeypadCell"
+                    android:text="3" />
+
+                <TextView
+                    android:id="@+id/keyMatrixA"
+                    style="@style/KeypadCell"
+                    android:text="A" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/keyMatrix4"
+                    style="@style/KeypadCell"
+                    android:text="4" />
+
+                <TextView
+                    android:id="@+id/keyMatrix5"
+                    style="@style/KeypadCell"
+                    android:text="5" />
+
+                <TextView
+                    android:id="@+id/keyMatrix6"
+                    style="@style/KeypadCell"
+                    android:text="6" />
+
+                <TextView
+                    android:id="@+id/keyMatrixB"
+                    style="@style/KeypadCell"
+                    android:text="B" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/keyMatrix7"
+                    style="@style/KeypadCell"
+                    android:text="7" />
+
+                <TextView
+                    android:id="@+id/keyMatrix8"
+                    style="@style/KeypadCell"
+                    android:text="8" />
+
+                <TextView
+                    android:id="@+id/keyMatrix9"
+                    style="@style/KeypadCell"
+                    android:text="9" />
+
+                <TextView
+                    android:id="@+id/keyMatrixC"
+                    style="@style/KeypadCell"
+                    android:text="C" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/panelTelemetry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.78"
+            android:background="@drawable/bg_panel"
+            android:elevation="6dp"
+            android:orientation="vertical"
             android:padding="12dp"
-            android:text="@string/status_default"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel_tag"
+                android:paddingLeft="10dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/panel_tag_telemetry"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_status_chip"
+                android:padding="12dp"
+                android:text="@string/status_default"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvModeStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_status_chip"
+                android:padding="12dp"
+                android:text="@string/mode_current_default"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_status_chip"
+                android:padding="10dp"
+                android:text="@string/telemetry_chip_one"
+                android:textColor="@color/text_primary"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_status_chip"
+                android:padding="10dp"
+                android:text="@string/telemetry_chip_two"
+                android:textColor="@color/text_primary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnToggleTelemetry"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="4dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="T"
+            android:textAllCaps="false"
             android:textColor="@color/text_primary"
             android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvModeStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_status_chip"
-            android:padding="12dp"
-            android:text="@string/mode_current_default"
-            android:textColor="@color/text_primary"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_status_chip"
-            android:padding="10dp"
-            android:text="@string/telemetry_chip_one"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_status_chip"
-            android:padding="10dp"
-            android:text="@string/telemetry_chip_two"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp" />
-    </LinearLayout>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/panelDrive"

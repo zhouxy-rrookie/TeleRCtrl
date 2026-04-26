@@ -44,6 +44,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var joystickRight: JoystickView
 
     private lateinit var imgLogo: ImageView
+    private lateinit var btnToggleTelemetry: Button
+    private lateinit var keypadMatrix: View
+    private lateinit var panelTelemetry: View
+    private val keypadCells = mutableListOf<TextView>()
+    private var selectedKeypadIndex: Int = -1
     private lateinit var cameraView: android.view.TextureView
     private lateinit var uvcController: UvcPreviewController
     private lateinit var usbSerialController: UsbSerialController
@@ -120,8 +125,22 @@ class MainActivity : AppCompatActivity() {
 
         cameraView = findViewById(R.id.camera_view)
         imgLogo = findViewById(R.id.imgLogo)
+        btnToggleTelemetry = findViewById(R.id.btnToggleTelemetry)
+        keypadMatrix = findViewById(R.id.keypadMatrix)
+        panelTelemetry = findViewById(R.id.panelTelemetry)
         drivePad = findViewById(R.id.drivePad)
         joystickRight = findViewById(R.id.joystickRight)
+
+        val keyMatrixIds = intArrayOf(
+            R.id.keyMatrix1, R.id.keyMatrix2, R.id.keyMatrix3, R.id.keyMatrixA,
+            R.id.keyMatrix4, R.id.keyMatrix5, R.id.keyMatrix6, R.id.keyMatrixB,
+            R.id.keyMatrix7, R.id.keyMatrix8, R.id.keyMatrix9, R.id.keyMatrixC,
+        )
+        keyMatrixIds.forEach { id ->
+            val cell = findViewById<TextView>(id)
+            cell.setOnClickListener { onKeypadCellClicked(cell) }
+            keypadCells.add(cell)
+        }
     }
 
     private fun bindClickListeners() {
@@ -151,6 +170,7 @@ class MainActivity : AppCompatActivity() {
         btnModeSelect.setOnClickListener { showModeSelectDialog() }
         btnUsbDiag.setOnClickListener { showUsbDiagnosticsDialog() }
         btnConfig.setOnClickListener { showConfigDialog() }
+        btnToggleTelemetry.setOnClickListener { toggleTelemetryPanel() }
         btnSidebarToggle.setOnClickListener { setSidebarExpanded(!sidebarExpanded) }
 
         configureSegmentGroup(
@@ -333,6 +353,46 @@ class MainActivity : AppCompatActivity() {
             .setMessage(report)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    private fun toggleTelemetryPanel() {
+        if (panelTelemetry.visibility == View.VISIBLE) {
+            panelTelemetry.visibility = View.GONE
+            keypadMatrix.visibility = View.VISIBLE
+        } else {
+            panelTelemetry.visibility = View.VISIBLE
+            keypadMatrix.visibility = View.GONE
+        }
+    }
+
+    private fun onKeypadCellClicked(cell: TextView) {
+        val index = keypadCells.indexOf(cell)
+        if (index < 0) return
+
+        if (selectedKeypadIndex == index) return
+
+        val unselectedBg = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 8f * resources.displayMetrics.density
+            setColor(Color.parseColor("#C00A2037"))
+            setStroke((1f * resources.displayMetrics.density).toInt(), Color.parseColor("#66EE781F"))
+        }
+        val selectedBg = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 8f * resources.displayMetrics.density
+            setColor(Color.parseColor("#CCEE781F"))
+        }
+
+        if (selectedKeypadIndex >= 0) {
+            keypadCells[selectedKeypadIndex].background = unselectedBg
+            keypadCells[selectedKeypadIndex].setTextColor(
+                resources.getColor(R.color.text_primary, theme)
+            )
+        }
+
+        selectedKeypadIndex = index
+        cell.background = selectedBg
+        cell.setTextColor(Color.WHITE)
     }
 
     private fun applyLogoVibrancy() {
