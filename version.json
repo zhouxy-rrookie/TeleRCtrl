@@ -1,6 +1,6 @@
 {
-  "versionCode": 7,
-  "versionName": "1.5",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.5/app-debug.apk",
-  "releaseNotes": "v1.5 更新"
+  "versionCode": 8,
+  "versionName": "1.6",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.6/app-debug.apk",
+  "releaseNotes": "更新通信协议"
 }
