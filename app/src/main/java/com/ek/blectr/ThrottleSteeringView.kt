@@ -92,6 +92,8 @@ class ThrottleSteeringView @JvmOverloads constructor(
     private var knobHeight = 0f
     private var cornerRadius = 0f
     private var targetKnobY = 0f
+    private var grabOffsetX = 0f
+    private var grabOffsetY = 0f
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -171,9 +173,15 @@ class ThrottleSteeringView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                updateKnob(event.x, event.y)
+            MotionEvent.ACTION_DOWN -> {
+                grabOffsetX = event.x - knobCenterX
+                grabOffsetY = event.y - knobCenterY
                 parent?.requestDisallowInterceptTouchEvent(true)
+                return true
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                updateKnob(event.x - grabOffsetX, event.y - grabOffsetY)
                 invalidate()
                 listener?.onMove(normalizedSteering(), normalizedThrottle())
                 return true

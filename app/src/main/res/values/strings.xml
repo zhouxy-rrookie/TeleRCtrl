@@ -62,6 +62,8 @@
     <string name="config_button">配置</string>
     <string name="config_title">配置矩阵</string>
     <string name="config_send">发送</string>
+    <string name="protocol_button">协议</string>
+    <string name="protocol_title">通信协议</string>
     <string name="func_pump">气泵</string>
     <string name="func_grab">夹取</string>
     <string name="func_fix">固定</string>

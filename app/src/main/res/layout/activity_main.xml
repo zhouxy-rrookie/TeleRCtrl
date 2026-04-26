@@ -428,6 +428,17 @@
             android:textSize="14sp" />
 
         <Button
+            android:id="@+id/btnProtocol"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/protocol_button"
+            android:textAllCaps="false"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <Button
             android:id="@+id/btnSelectDevice"
             android:layout_width="match_parent"
             android:layout_height="48dp"

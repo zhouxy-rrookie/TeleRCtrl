@@ -96,6 +96,8 @@ class JoystickView @JvmOverloads constructor(
     private var knobRadius = 0f
     private var knobX = 0f
     private var knobY = 0f
+    private var grabOffsetX = 0f
+    private var grabOffsetY = 0f
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         centerX = w / 2f
@@ -153,9 +155,15 @@ class JoystickView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                updateKnob(event.x, event.y)
+            MotionEvent.ACTION_DOWN -> {
+                grabOffsetX = event.x - knobX
+                grabOffsetY = event.y - knobY
                 parent?.requestDisallowInterceptTouchEvent(true)
+                return true
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                updateKnob(event.x - grabOffsetX, event.y - grabOffsetY)
                 invalidate()
                 listener?.onMove(normalizedX(), normalizedY())
                 return true

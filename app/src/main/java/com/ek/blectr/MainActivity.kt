@@ -14,6 +14,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnVideoMenu: Button
     private lateinit var btnUsbDiag: Button
     private lateinit var btnConfig: Button
+    private lateinit var btnProtocol: Button
     private lateinit var btnSidebarToggle: Button
     private lateinit var panelSidebar: View
     private lateinit var guideLeftEnd: Guideline
@@ -59,36 +61,29 @@ class MainActivity : AppCompatActivity() {
     private var axisX: Float = 0f
     private var axisY: Float = 0f
     private var axisYaw: Float = 0f
-    private var lastXValue: Int = 0
-    private var lastYValue: Int = 0
-    private var lastYawValue: Int = 0
+    private var axisJoystickY: Float = 0f
     private var packetSequence: Int = 0
-    private var strafeStickActive: Boolean = false
-    private var drivePadActive: Boolean = false
-    private var motionStreaming: Boolean = false
-    private val motionHandler = Handler(Looper.getMainLooper())
+    private var isStreaming: Boolean = false
+    private val streamHandler = Handler(Looper.getMainLooper())
     private var sidebarExpanded: Boolean = false
-    private var selectedMode: Int = 1
     private val cellStates = IntArray(12)
+    private var switchChassis = 0
+    private var switchChannel = 0
+    private var switchZone = 0
 
     companion object {
-        private const val MOTION_STREAM_INTERVAL_MS = 50L
+        private const val STREAM_INTERVAL_MS = 50L
         private const val AXIS_SCALE = 100
-        private const val FRAME_HEADER_A = 0xAA
-        private const val FRAME_HEADER_B = 0x55
-        private const val FRAME_TAIL = 0x0D
-        private const val MODE_MARKER = 0x7F
-        private const val CONFIG_HEADER = 0xCC
-        private const val FUNC_MARKER = 0x7E
+        private const val FRAME_H1 = 0x5B
+        private const val FRAME_H2 = 0x5B
+        private const val FRAME_TAIL = 0x2B
     }
 
-    private val motionStreamRunnable = object : Runnable {
+    private val streamRunnable = object : Runnable {
         override fun run() {
-            if (!motionStreaming) {
-                return
-            }
-            dispatchMotionCommand(forceSend = true)
-            motionHandler.postDelayed(this, MOTION_STREAM_INTERVAL_MS)
+            if (!isStreaming) return
+            sendUnifiedFrame()
+            streamHandler.postDelayed(this, STREAM_INTERVAL_MS)
         }
     }
 
@@ -106,9 +101,7 @@ class MainActivity : AppCompatActivity() {
         }
         bindClickListeners()
         setSidebarExpanded(false)
-        updateModeStatus()
         updateStatus("未连接")
-        checkForUpdates()
     }
 
     private fun bindViews() {
@@ -119,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         btnVideoMenu = findViewById(R.id.btnVideoMenu)
         btnUsbDiag = findViewById(R.id.btnUsbDiag)
         btnConfig = findViewById(R.id.btnConfig)
+        btnProtocol = findViewById(R.id.btnProtocol)
         btnSidebarToggle = findViewById(R.id.btnSidebarToggle)
         panelSidebar = findViewById(R.id.panelSidebar)
         guideLeftEnd = findViewById(R.id.guideLeftEnd)
@@ -167,6 +161,7 @@ class MainActivity : AppCompatActivity() {
         applyGamePadMotion(btnDisconnect, 1.04f)
         applyGamePadMotion(btnUsbDiag, 1.04f)
         applyGamePadMotion(btnConfig, 1.04f)
+        applyGamePadMotion(btnProtocol, 1.04f)
         applyGamePadMotion(btnSidebarToggle, 1.04f)
 
         btnSelectDevice.setOnClickListener {
@@ -185,6 +180,7 @@ class MainActivity : AppCompatActivity() {
         }
         btnUsbDiag.setOnClickListener { showUsbDiagnosticsDialog() }
         btnConfig.setOnClickListener { showConfigDialog() }
+        btnProtocol.setOnClickListener { showProtocolDialog() }
         btnToggleTelemetry.setOnClickListener { toggleTelemetryPanel() }
         btnSidebarToggle.setOnClickListener { setSidebarExpanded(!sidebarExpanded) }
 
@@ -194,14 +190,14 @@ class MainActivity : AppCompatActivity() {
                 findViewById(R.id.switchTask),
             ),
             defaultIndex = 0,
-        )
+        ) { index -> switchChassis = index }
         configureSegmentGroup(
             listOf(
                 findViewById(R.id.switchChannel1),
                 findViewById(R.id.switchChannel2),
             ),
             defaultIndex = 0,
-        )
+        ) { index -> switchChannel = index }
         configureSegmentGroup(
             listOf(
                 findViewById(R.id.switchZone1),
@@ -209,36 +205,28 @@ class MainActivity : AppCompatActivity() {
                 findViewById(R.id.switchZone3),
             ),
             defaultIndex = 0,
-        )
+        ) { index -> switchZone = index }
 
         joystickRight.listener = object : JoystickView.Listener {
             override fun onMove(normalizedX: Float, normalizedY: Float) {
-                strafeStickActive = true
                 axisX = normalizedX
-                ensureMotionStreaming()
+                axisJoystickY = normalizedY
             }
 
             override fun onRelease() {
-                strafeStickActive = false
                 axisX = 0f
-                stopMotionStreamingIfIdle()
+                axisJoystickY = 0f
             }
         }
 
         drivePad.listener = object : ThrottleSteeringView.Listener {
             override fun onMove(normalizedSteering: Float, normalizedThrottle: Float) {
-                drivePadActive = true
                 axisY = normalizedThrottle
                 axisYaw = normalizedSteering
-                ensureMotionStreaming()
             }
 
             override fun onRelease() {
                 axisYaw = 0f
-                if (axisY == 0f) {
-                    drivePadActive = false
-                }
-                stopMotionStreamingIfIdle()
             }
         }
     }
@@ -250,18 +238,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        stopMotionStreaming(forceStopCommand = false)
-        usbSerialController.onStop()
         uvcController.onStop()
+        usbSerialController.onStop()
         super.onStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        stopMotionStreaming(forceStopCommand = false)
+        stopStreaming()
         uvcController.onDestroy()
         usbSerialController.onDestroy()
-        disconnect()
         ioExecutor.shutdownNow()
     }
 
@@ -291,25 +277,54 @@ class MainActivity : AppCompatActivity() {
             updateStatus("请先选择设备")
             return
         }
-
         updateStatus("连接中...")
         usbSerialController.requestPermissionAndConnect(device)
+        startStreaming()
     }
 
     private fun disconnect() {
+        stopStreaming()
         usbSerialController.disconnect()
         updateStatus("已断开连接")
     }
 
-    private fun sendPacket(packet: ByteArray) {
-        if (!usbSerialController.isConnected()) {
-            updateStatus("未连接，无法发送指令")
-            return
-        }
+    private fun startStreaming() {
+        if (isStreaming) return
+        isStreaming = true
+        streamHandler.post(streamRunnable)
+    }
 
-        ioExecutor.execute {
-            usbSerialController.write(packet)
+    private fun stopStreaming() {
+        isStreaming = false
+        streamHandler.removeCallbacks(streamRunnable)
+    }
+
+    private fun sendUnifiedFrame() {
+        if (!usbSerialController.isConnected()) return
+        val frame = ByteArray(9)
+        frame[0] = FRAME_H1.toByte()
+        frame[1] = FRAME_H2.toByte()
+        val matrixVal = if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
+        val modeVal = switchZone * 4 + switchChannel * 2 + switchChassis
+        frame[2] = ((matrixVal shl 4) or (modeVal and 0x0F)).toByte()
+        var btnByte = 0
+        for (i in 0 until 6) {
+            if (funcButtonStates[i]) btnByte = btnByte or (1 shl i)
         }
+        frame[3] = btnByte.toByte()
+        val deadZone = 0.14f
+        frame[4] = toAxisByte(if (abs(axisY) < deadZone) 0f else axisY)
+        frame[5] = toAxisByte(if (abs(axisYaw) < deadZone) 0f else axisYaw)
+        frame[6] = toAxisByte(if (abs(axisX) < deadZone) 0f else axisX)
+        frame[7] = toAxisByte(if (abs(axisJoystickY) < deadZone) 0f else axisJoystickY)
+        frame[8] = FRAME_TAIL.toByte()
+        ioExecutor.execute {
+            usbSerialController.write(frame)
+        }
+    }
+
+    private fun toAxisByte(value: Float): Byte {
+        return (value.coerceIn(-1f, 1f) * AXIS_SCALE).roundToInt().coerceIn(-AXIS_SCALE, AXIS_SCALE).toByte()
     }
 
     private fun showUvcDevicesDialog() {
@@ -346,21 +361,6 @@ class MainActivity : AppCompatActivity() {
         return String.format(Locale.US, "%04X", value and 0xFFFF)
     }
 
-    private fun showModeSelectDialog() {
-        val modeLabels = (1..15).map { mode -> "模式 $mode" }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.mode_select_title))
-            .setSingleChoiceItems(modeLabels, selectedMode - 1) { dialog, which ->
-                val mode = which + 1
-                selectedMode = mode
-                updateModeStatus()
-                sendModePacket(mode)
-                dialog.dismiss()
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
     private fun showUsbDiagnosticsDialog() {
         val report = uvcController.getUsbDiagnosticsReport()
         AlertDialog.Builder(this)
@@ -383,9 +383,7 @@ class MainActivity : AppCompatActivity() {
     private fun onKeypadCellClicked(cell: TextView) {
         val index = keypadCells.indexOf(cell)
         if (index < 0) return
-
         if (selectedKeypadIndex == index) return
-
         val unselectedBg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = 8f * resources.displayMetrics.density
@@ -397,14 +395,10 @@ class MainActivity : AppCompatActivity() {
             cornerRadius = 8f * resources.displayMetrics.density
             setColor(Color.parseColor("#CCEE781F"))
         }
-
         if (selectedKeypadIndex >= 0) {
             keypadCells[selectedKeypadIndex].background = unselectedBg
-            keypadCells[selectedKeypadIndex].setTextColor(
-                resources.getColor(R.color.text_primary, theme)
-            )
+            keypadCells[selectedKeypadIndex].setTextColor(resources.getColor(R.color.text_primary, theme))
         }
-
         selectedKeypadIndex = index
         cell.background = selectedBg
         cell.setTextColor(Color.WHITE)
@@ -426,27 +420,10 @@ class MainActivity : AppCompatActivity() {
         }
         btn.background = bg
         btn.setTextColor(if (active) Color.WHITE else resources.getColor(R.color.text_primary, theme))
-        sendFuncPacket(index, active)
-    }
-
-    private fun sendFuncPacket(buttonIndex: Int, state: Boolean) {
-        val frame = ByteArray(8)
-        frame[0] = FRAME_HEADER_A.toByte()
-        frame[1] = FRAME_HEADER_B.toByte()
-        frame[2] = FUNC_MARKER.toByte()
-        frame[3] = (buttonIndex and 0xFF).toByte()
-        frame[4] = if (state) 1 else 0
-        frame[5] = (packetSequence and 0xFF).toByte()
-        frame[6] = computeChecksum(frame)
-        frame[7] = FRAME_TAIL.toByte()
-        packetSequence = (packetSequence + 1) and 0xFF
-        sendPacket(frame)
     }
 
     private fun applyLogoVibrancy() {
-        val cm = ColorMatrix().apply {
-            setSaturation(1.6f)
-        }
+        val cm = ColorMatrix().apply { setSaturation(1.6f) }
         imgLogo.colorFilter = ColorMatrixColorFilter(cm)
     }
 
@@ -454,21 +431,10 @@ class MainActivity : AppCompatActivity() {
         view.setOnTouchListener { touchedView, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    touchedView.animate()
-                        .scaleX(pressedScale)
-                        .scaleY(pressedScale)
-                        .alpha(0.92f)
-                        .setDuration(90)
-                        .start()
+                    touchedView.animate().scaleX(pressedScale).scaleY(pressedScale).alpha(0.92f).setDuration(90).start()
                 }
-
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    touchedView.animate()
-                        .scaleX(1f)
-                        .scaleY(1f)
-                        .alpha(1f)
-                        .setDuration(110)
-                        .start()
+                    touchedView.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(110).start()
                 }
             }
             false
@@ -478,15 +444,13 @@ class MainActivity : AppCompatActivity() {
     private fun setSidebarExpanded(expanded: Boolean) {
         sidebarExpanded = expanded
         panelSidebar.visibility = if (expanded) View.VISIBLE else View.GONE
-
         val params = guideLeftEnd.layoutParams as ConstraintLayout.LayoutParams
         params.guidePercent = if (expanded) 0.20f else 0.03f
         guideLeftEnd.layoutParams = params
-
         btnSidebarToggle.text = if (expanded) getString(R.string.sidebar_close) else getString(R.string.sidebar_open)
     }
 
-    private fun configureSegmentGroup(options: List<TextView>, defaultIndex: Int) {
+    private fun configureSegmentGroup(options: List<TextView>, defaultIndex: Int, onSelected: (Int) -> Unit = {}) {
         options.forEachIndexed { index, option ->
             option.isSelected = index == defaultIndex
             applyGamePadMotion(option, 1.02f)
@@ -494,99 +458,77 @@ class MainActivity : AppCompatActivity() {
                 options.forEachIndexed { selectedIndex, selectedOption ->
                     selectedOption.isSelected = selectedIndex == index
                 }
+                onSelected(index)
             }
         }
     }
 
-    private fun ensureMotionStreaming() {
-        if (motionStreaming) {
-            return
+    private fun showModeSelectDialog() {
+        val modeLabels = (1..15).map { mode -> "模式 $mode" }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.mode_select_title))
+            .setSingleChoiceItems(modeLabels, 0) { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showProtocolDialog() {
+        val protocolText = """
+9字节帧  |  每50ms持续发送
+
+┌────┬────┬──────────────────┬──────────────────┬──────┬──────┬──────┬──────┬────┐
+│ 0  │ 1  │       2         │        3         │  4   │  5   │  6   │  7   │ 8  │
+├────┼────┼──────────────────┼──────────────────┼──────┼──────┼──────┼──────┼────┤
+│5B  │5B  │高4:矩阵 低4:模式 │低6:功能键 高2:保留│ 油门 │  VW  │  VX  │  VY  │2B  │
+└────┴────┴──────────────────┴──────────────────┴──────┴──────┴──────┴──────┴────┘
+
+Byte 0-1: 帧头 0x5B 0x5B
+Byte 8:   帧尾 0x2B
+
+Byte 2 高4bit: 矩阵选中键 (0~11)
+  0=1, 1=2, 2=3, 3=A, 4=4, 5=5, 6=6,
+  7=B, 8=7, 9=8, 10=9, 11=C
+
+Byte 2 低4bit: 模式 (zone*4+channel*2+chassic)
+  chassis: 底盘=0, 任务=1
+  channel: 通道1=0, 通道2=1
+  zone:    一区=0, 二区=1, 三区=2
+  共 2*2*3 = 12 种组合 (0~11)
+
+Byte 3 bit0~5: 功能键 (1=开 0=关)
+  bit0: 气泵
+  bit1: 夹取
+  bit2: 固定
+  bit3: 灯1
+  bit4: 灯2
+  bit5: 灯3
+  bit6~7: 保留
+
+Byte 4: 油门   -100~100 (上推正, 死区0.14)
+Byte 5: VW     -100~100 (左摇杆转向, 死区0.14)
+Byte 6: VX     -100~100 (右摇杆横移, 死区0.14)
+Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
+
+连接USB后即开始持续发送, 断开即停止.
+        """.trimIndent()
+
+        val scrollView = ScrollView(this)
+        val textView = TextView(this).apply {
+            text = protocolText
+            textSize = 12f
+            setTextColor(Color.parseColor("#D0E0F0"))
+            setPadding(24, 20, 24, 20)
+            setLineSpacing(4f, 1f)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setHorizontallyScrolling(true)
         }
-        motionStreaming = true
-        motionHandler.post(motionStreamRunnable)
-    }
+        scrollView.addView(textView)
 
-    private fun stopMotionStreamingIfIdle() {
-        if (drivePadActive || strafeStickActive) {
-            return
-        }
-        stopMotionStreaming(forceStopCommand = true)
-    }
-
-    private fun stopMotionStreaming(forceStopCommand: Boolean) {
-        motionStreaming = false
-        motionHandler.removeCallbacks(motionStreamRunnable)
-        if (forceStopCommand) {
-            dispatchMotionCommand(forceSend = true)
-        }
-    }
-
-    private fun dispatchMotionCommand(forceSend: Boolean = false) {
-        val deadZone = 0.14f
-        val x = toAxisInt(if (abs(axisX) < deadZone) 0f else axisX)
-        val y = toAxisInt(if (abs(axisY) < deadZone) 0f else axisY)
-        val yaw = toAxisInt(if (abs(axisYaw) < deadZone) 0f else axisYaw)
-
-        if (!forceSend && x == lastXValue && y == lastYValue && yaw == lastYawValue) {
-            return
-        }
-
-        val packet = buildMotionPacket(
-            x,
-            y,
-            yaw,
-        )
-        lastXValue = x
-        lastYValue = y
-        lastYawValue = yaw
-        sendPacket(packet)
-    }
-
-    private fun toAxisInt(value: Float): Int {
-        return (value.coerceIn(-1f, 1f) * AXIS_SCALE).roundToInt().coerceIn(-AXIS_SCALE, AXIS_SCALE)
-    }
-
-    private fun sendModePacket(mode: Int) {
-        val normalizedMode = mode.coerceIn(1, 15)
-        val packet = buildModePacket(normalizedMode)
-        sendPacket(packet)
-        updateStatus(getString(R.string.mode_sent_format, normalizedMode))
-    }
-
-    private fun buildMotionPacket(x: Int, y: Int, yaw: Int): ByteArray {
-        val frame = ByteArray(8)
-        frame[0] = FRAME_HEADER_A.toByte()
-        frame[1] = FRAME_HEADER_B.toByte()
-        frame[2] = x.toByte()
-        frame[3] = y.toByte()
-        frame[4] = yaw.toByte()
-        frame[5] = (packetSequence and 0xFF).toByte()
-        frame[6] = computeChecksum(frame)
-        frame[7] = FRAME_TAIL.toByte()
-        packetSequence = (packetSequence + 1) and 0xFF
-        return frame
-    }
-
-    private fun buildModePacket(mode: Int): ByteArray {
-        val frame = ByteArray(8)
-        frame[0] = FRAME_HEADER_A.toByte()
-        frame[1] = FRAME_HEADER_B.toByte()
-        frame[2] = MODE_MARKER.toByte()
-        frame[3] = mode.toByte()
-        frame[4] = 0
-        frame[5] = (packetSequence and 0xFF).toByte()
-        frame[6] = computeChecksum(frame)
-        frame[7] = FRAME_TAIL.toByte()
-        packetSequence = (packetSequence + 1) and 0xFF
-        return frame
-    }
-
-    private fun computeChecksum(frame: ByteArray): Byte {
-        var sum = 0
-        for (index in 0..5) {
-            sum = (sum + (frame[index].toInt() and 0xFF)) and 0xFF
-        }
-        return sum.toByte()
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.protocol_title))
+            .setView(scrollView)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun showConfigDialog() {
@@ -678,7 +620,7 @@ class MainActivity : AppCompatActivity() {
             text = getString(R.string.config_send)
             textSize = 16f
             setOnClickListener {
-                sendConfigPacket()
+                updateStatus("配置已更新")
             }
         }
         root.addView(sendButton)
@@ -690,43 +632,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun sendConfigPacket() {
-        val payload = IntArray(3)
-        for (i in 0 until 12) {
-            val byteIndex = i / 4
-            val shift = (3 - (i % 4)) * 2
-            payload[byteIndex] = payload[byteIndex] or (cellStates[i] shl shift)
-        }
-        val frame = ByteArray(4)
-        frame[0] = CONFIG_HEADER.toByte()
-        frame[1] = payload[0].toByte()
-        frame[2] = payload[1].toByte()
-        frame[3] = payload[2].toByte()
-        sendPacket(frame)
-        updateStatus("配置已发送")
-    }
-
     private fun updateStatus(msg: String) {
         tvStatus.text = getString(R.string.status_format, msg)
-    }
-
-    private fun updateModeStatus() {
-        tvModeStatus.text = getString(R.string.mode_current_format, selectedMode)
-    }
-
-    private fun checkForUpdates() {
-        UpdateManager(this).checkForUpdate { info ->
-            if (info == null) return@checkForUpdate
-            runOnUiThread {
-                AlertDialog.Builder(this)
-                    .setTitle("发现新版本 ${info.versionName}")
-                    .setMessage(info.releaseNotes)
-                    .setPositiveButton("立即更新") { _, _ ->
-                        UpdateManager(this).downloadAndInstall(info)
-                    }
-                    .setNegativeButton("稍后", null)
-                    .show()
-            }
-        }
     }
 }
