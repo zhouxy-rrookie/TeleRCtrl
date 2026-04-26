@@ -53,10 +53,20 @@ class UpdateManager(private val context: Context) {
         val fileName = "blectr_update_${info.versionName}.apk"
         val uri = Uri.parse(info.apkUrl)
 
+        val downloadManager =
+            context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+        try {
+            downloadManager.query(DownloadManager.Query().setFilterById(-1))
+        } catch (_: SecurityException) {
+            Toast.makeText(context, "下载管理器不可用", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val request = DownloadManager.Request(uri)
             .setTitle(context.getString(R.string.app_name) + " 更新")
             .setDescription("正在下载 ${info.versionName} ...")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
             .setDestinationInExternalFilesDir(
                 context,
                 Environment.DIRECTORY_DOWNLOADS,
@@ -67,10 +77,13 @@ class UpdateManager(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             request.setRequiresCharging(false)
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+        }
 
-        val downloadManager =
-            context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
+
+        Toast.makeText(context, "开始下载 ${info.versionName} ...", Toast.LENGTH_SHORT).show()
 
         val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
         val receiver = object : BroadcastReceiver() {
@@ -78,6 +91,22 @@ class UpdateManager(private val context: Context) {
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
                 if (id != downloadId) return
                 ctx.unregisterReceiver(this)
+
+                val query = DownloadManager.Query().setFilterById(downloadId)
+                val cursor = downloadManager.query(query)
+                var success = false
+                cursor?.use {
+                    if (it.moveToFirst()) {
+                        val status = it.getInt(it.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                        success = status == DownloadManager.STATUS_SUCCESSFUL
+                    }
+                }
+
+                if (!success) {
+                    Toast.makeText(ctx, "下载失败，请检查网络后重试", Toast.LENGTH_LONG).show()
+                    return
+                }
+
                 val apkUri = resolveDownloadedFile(downloadManager, downloadId, fileName)
                 if (apkUri != null) {
                     installApk(apkUri)
