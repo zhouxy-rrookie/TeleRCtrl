@@ -192,7 +192,7 @@ class ThrottleSteeringView @JvmOverloads constructor(
     private fun updateKnob(x: Float, y: Float) {
         knobCenterX = x.coerceIn(centerX - maxOffsetX, centerX + maxOffsetX)
         targetKnobY = y.coerceIn(centerY - maxOffsetY, centerY + maxOffsetY)
-        knobCenterY += (targetKnobY - knobCenterY) * 0.38f
+        knobCenterY += (targetKnobY - knobCenterY) * 0.22f
     }
 
     private fun resetKnob() {

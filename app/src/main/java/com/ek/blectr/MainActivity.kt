@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnConnect: Button
     private lateinit var btnDisconnect: Button
     private lateinit var btnVideoMenu: Button
-    private lateinit var btnModeSelect: Button
     private lateinit var btnUsbDiag: Button
     private lateinit var btnConfig: Button
     private lateinit var btnSidebarToggle: Button
@@ -49,6 +48,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var panelTelemetry: View
     private val keypadCells = mutableListOf<TextView>()
     private var selectedKeypadIndex: Int = -1
+    private val funcButtons = mutableListOf<TextView>()
+    private val funcButtonStates = BooleanArray(6)
     private lateinit var cameraView: android.view.TextureView
     private lateinit var uvcController: UvcPreviewController
     private lateinit var usbSerialController: UsbSerialController
@@ -78,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         private const val FRAME_TAIL = 0x0D
         private const val MODE_MARKER = 0x7F
         private const val CONFIG_HEADER = 0xCC
+        private const val FUNC_MARKER = 0x7E
     }
 
     private val motionStreamRunnable = object : Runnable {
@@ -115,7 +117,6 @@ class MainActivity : AppCompatActivity() {
         btnConnect = findViewById(R.id.btnConnect)
         btnDisconnect = findViewById(R.id.btnDisconnect)
         btnVideoMenu = findViewById(R.id.btnVideoMenu)
-        btnModeSelect = findViewById(R.id.btnModeSelect)
         btnUsbDiag = findViewById(R.id.btnUsbDiag)
         btnConfig = findViewById(R.id.btnConfig)
         btnSidebarToggle = findViewById(R.id.btnSidebarToggle)
@@ -141,6 +142,22 @@ class MainActivity : AppCompatActivity() {
             cell.setOnClickListener { onKeypadCellClicked(cell) }
             keypadCells.add(cell)
         }
+
+        val funcButtonIds = intArrayOf(
+            R.id.funcPump, R.id.funcGrab, R.id.funcFix,
+            R.id.funcLight1, R.id.funcLight2, R.id.funcLight3,
+        )
+        funcButtonIds.forEachIndexed { index, id ->
+            val btn = findViewById<TextView>(id)
+            btn.setOnClickListener { onFuncButtonClicked(index, btn) }
+            val bg = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setStroke((3f * resources.displayMetrics.density).toInt(), Color.parseColor("#88EE781F"))
+                setColor(Color.parseColor("#C00A2037"))
+            }
+            btn.background = bg
+            funcButtons.add(btn)
+        }
     }
 
     private fun bindClickListeners() {
@@ -148,7 +165,6 @@ class MainActivity : AppCompatActivity() {
         applyGamePadMotion(btnSelectDevice, 1.04f)
         applyGamePadMotion(btnConnect, 1.04f)
         applyGamePadMotion(btnDisconnect, 1.04f)
-        applyGamePadMotion(btnModeSelect, 1.04f)
         applyGamePadMotion(btnUsbDiag, 1.04f)
         applyGamePadMotion(btnConfig, 1.04f)
         applyGamePadMotion(btnSidebarToggle, 1.04f)
@@ -167,7 +183,6 @@ class MainActivity : AppCompatActivity() {
             showUsbDiagnosticsDialog()
             true
         }
-        btnModeSelect.setOnClickListener { showModeSelectDialog() }
         btnUsbDiag.setOnClickListener { showUsbDiagnosticsDialog() }
         btnConfig.setOnClickListener { showConfigDialog() }
         btnToggleTelemetry.setOnClickListener { toggleTelemetryPanel() }
@@ -393,6 +408,39 @@ class MainActivity : AppCompatActivity() {
         selectedKeypadIndex = index
         cell.background = selectedBg
         cell.setTextColor(Color.WHITE)
+    }
+
+    private fun onFuncButtonClicked(index: Int, btn: TextView) {
+        funcButtonStates[index] = !funcButtonStates[index]
+        val active = funcButtonStates[index]
+        val d = resources.displayMetrics.density
+        val bg = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            if (active) {
+                setColor(Color.parseColor("#CCEE781F"))
+                setStroke((4f * d).toInt(), Color.parseColor("#FFD08040"))
+            } else {
+                setStroke((3f * d).toInt(), Color.parseColor("#88EE781F"))
+                setColor(Color.parseColor("#C00A2037"))
+            }
+        }
+        btn.background = bg
+        btn.setTextColor(if (active) Color.WHITE else resources.getColor(R.color.text_primary, theme))
+        sendFuncPacket(index, active)
+    }
+
+    private fun sendFuncPacket(buttonIndex: Int, state: Boolean) {
+        val frame = ByteArray(8)
+        frame[0] = FRAME_HEADER_A.toByte()
+        frame[1] = FRAME_HEADER_B.toByte()
+        frame[2] = FUNC_MARKER.toByte()
+        frame[3] = (buttonIndex and 0xFF).toByte()
+        frame[4] = if (state) 1 else 0
+        frame[5] = (packetSequence and 0xFF).toByte()
+        frame[6] = computeChecksum(frame)
+        frame[7] = FRAME_TAIL.toByte()
+        packetSequence = (packetSequence + 1) and 0xFF
+        sendPacket(frame)
     }
 
     private fun applyLogoVibrancy() {

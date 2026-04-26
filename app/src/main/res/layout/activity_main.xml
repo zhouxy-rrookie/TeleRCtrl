@@ -406,17 +406,6 @@
             android:textSize="14sp" />
 
         <Button
-            android:id="@+id/btnModeSelect"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="@string/mode_select"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp" />
-
-        <Button
             android:id="@+id/btnUsbDiag"
             android:layout_width="match_parent"
             android:layout_height="46dp"
@@ -637,18 +626,20 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btnToggleTelemetry"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="4dp"
-            android:background="@drawable/bg_button_secondary"
-            android:text="T"
-            android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp" />
     </FrameLayout>
+
+    <Button
+        android:id="@+id/btnToggleTelemetry"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_button_secondary"
+        android:text="T"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@id/containerTopRight"
+        app:layout_constraintTop_toBottomOf="@id/containerTopRight" />
 
     <LinearLayout
         android:id="@+id/panelDrive"
@@ -754,17 +745,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvControlTitle">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/switch_target_title"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="6dp"
                 android:background="@drawable/bg_toggle_group"
                 android:orientation="horizontal"
                 android:padding="1dp">
@@ -796,14 +779,6 @@
                     android:textColor="@color/toggle_segment_text"
                     android:textSize="13sp" />
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/switch_channel_title"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -840,14 +815,6 @@
                     android:textColor="@color/toggle_segment_text"
                     android:textSize="13sp" />
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/switch_zone_title"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -925,5 +892,61 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvRightStickLabel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/colFuncLeft"
+        android:layout_width="56dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/panelDrive"
+        app:layout_constraintEnd_toStartOf="@id/guideBottomSplit"
+        app:layout_constraintStart_toEndOf="@id/panelDrive"
+        app:layout_constraintTop_toTopOf="@id/panelDrive">
+
+        <TextView
+            android:id="@+id/funcPump"
+            style="@style/FuncRound"
+            android:text="@string/func_pump" />
+
+        <TextView
+            android:id="@+id/funcGrab"
+            style="@style/FuncRound"
+            android:text="@string/func_grab" />
+
+        <TextView
+            android:id="@+id/funcFix"
+            style="@style/FuncRound"
+            android:text="@string/func_fix" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/colFuncRight"
+        android:layout_width="56dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/panelControl"
+        app:layout_constraintEnd_toStartOf="@id/panelControl"
+        app:layout_constraintStart_toEndOf="@id/guideBottomSplit"
+        app:layout_constraintTop_toTopOf="@id/panelControl">
+
+        <TextView
+            android:id="@+id/funcLight1"
+            style="@style/FuncRound"
+            android:text="@string/func_light1" />
+
+        <TextView
+            android:id="@+id/funcLight2"
+            style="@style/FuncRound"
+            android:text="@string/func_light2" />
+
+        <TextView
+            android:id="@+id/funcLight3"
+            style="@style/FuncRound"
+            android:text="@string/func_light3" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
