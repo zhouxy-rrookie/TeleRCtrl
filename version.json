@@ -1,6 +1,6 @@
 {
-  "versionCode": 11,
-  "versionName": "1.7.1",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.7.1/app-debug.apk",
-  "releaseNotes": "新增手动检查更新按钮\n- 侧边栏底部添加\"检查更新\"按钮\n- 恢复启动自动检查更新\n- 优化 USB 链路"
+  "versionCode": 12,
+  "versionName": "1.7.2",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.7.2/app-debug.apk",
+  "releaseNotes": "修复菜单栏溢出屏幕\n- 侧边栏高度约束到屏幕底部\n- 按钮列表支持滚动\n- 优化 USB 链路"
 }
