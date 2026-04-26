@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnConfig: Button
     private lateinit var btnProtocol: Button
     private lateinit var btnSidebarToggle: Button
+    private lateinit var btnCheckUpdate: Button
     private lateinit var panelSidebar: View
     private lateinit var guideLeftEnd: Guideline
 
@@ -109,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         bindClickListeners()
         setSidebarExpanded(false)
         updateStatus("未连接")
+        checkForUpdates()
     }
 
     private fun bindViews() {
@@ -122,6 +124,7 @@ class MainActivity : AppCompatActivity() {
         btnConfig = findViewById(R.id.btnConfig)
         btnProtocol = findViewById(R.id.btnProtocol)
         btnSidebarToggle = findViewById(R.id.btnSidebarToggle)
+        btnCheckUpdate = findViewById(R.id.btnCheckUpdate)
         panelSidebar = findViewById(R.id.panelSidebar)
         guideLeftEnd = findViewById(R.id.guideLeftEnd)
 
@@ -170,6 +173,12 @@ class MainActivity : AppCompatActivity() {
         applyGamePadMotion(btnConfig, 1.04f)
         applyGamePadMotion(btnProtocol, 1.04f)
         applyGamePadMotion(btnSidebarToggle, 1.04f)
+        applyGamePadMotion(btnCheckUpdate, 1.04f)
+
+        btnCheckUpdate.setOnClickListener {
+            updateStatus("正在检查更新...")
+            checkForUpdates()
+        }
 
         btnSelectDevice.setOnClickListener {
             showUsbSerialDevicesDialog()
@@ -642,5 +651,21 @@ Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
 
     private fun updateStatus(msg: String) {
         tvStatus.text = getString(R.string.status_format, msg)
+    }
+
+    private fun checkForUpdates() {
+        UpdateManager(this).checkForUpdate { info ->
+            if (info == null) return@checkForUpdate
+            runOnUiThread {
+                AlertDialog.Builder(this)
+                    .setTitle("发现新版本 ${info.versionName}")
+                    .setMessage(info.releaseNotes)
+                    .setPositiveButton("立即更新") { _, _ ->
+                        UpdateManager(this).downloadAndInstall(info)
+                    }
+                    .setNegativeButton("稍后", null)
+                    .show()
+            }
+        }
     }
 }
