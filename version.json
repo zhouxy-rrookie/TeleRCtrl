@@ -1,6 +1,6 @@
 {
-  "versionCode": 14,
-  "versionName": "1.8.1",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.1/app-debug.apk",
-  "releaseNotes": "优化 UVC 颜色滤镜\n- 去掉视频上的蓝橙分层遮罩\n- 红蓝识别改为基于色相/饱和度/亮度判断\n- 减少大面积环境偏色误判"
+  "versionCode": 15,
+  "versionName": "1.8.2",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.2/app-debug.apk",
+  "releaseNotes": "修复图传偶发闪屏\n- 原图模式下不再干预 UVC 帧回调\n- 仅在开启滤镜时注册处理回调\n- 降低原始图传链路被打断的概率"
 }

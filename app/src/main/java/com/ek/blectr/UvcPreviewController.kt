@@ -36,6 +36,7 @@ class UvcPreviewController(
     private var autoConnectEnabled: Boolean = false
     private var permissionRequestInFlight: Boolean = false
     private var processedPreviewEnabled: Boolean = false
+    private var frameCallbackActive: Boolean = false
     private var previewWidth: Int = 0
     private var previewHeight: Int = 0
     private var processedFrameWidth: Int = 0
@@ -88,6 +89,7 @@ class UvcPreviewController(
             permissionRequestInFlight = false
             uvcCamera?.destroy()
             uvcCamera = null
+            frameCallbackActive = false
             frameProcessing.set(false)
             processedPreviewView.post {
                 processedPreviewView.setImageDrawable(null)
@@ -126,6 +128,7 @@ class UvcPreviewController(
     fun onStop() {
         uvcCamera?.destroy()
         uvcCamera = null
+        frameCallbackActive = false
         frameProcessing.set(false)
         processedPreviewView.setImageDrawable(null)
         usbMonitor?.unregister()
@@ -134,6 +137,7 @@ class UvcPreviewController(
     fun onDestroy() {
         uvcCamera?.destroy()
         uvcCamera = null
+        frameCallbackActive = false
         frameProcessing.set(false)
         usbMonitor?.destroy()
         usbMonitor = null
@@ -290,10 +294,13 @@ class UvcPreviewController(
     private fun updateProcessedPreviewState(camera: UVCCamera) {
         if (!processedPreviewEnabled) {
             frameProcessing.set(false)
-            try {
-                camera.setFrameCallback(null, UVCCamera.PIXEL_FORMAT_RGBX)
-            } catch (_: Exception) {
-                // Some builds may reject removing a callback before preview settles.
+            if (frameCallbackActive) {
+                try {
+                    camera.setFrameCallback(null, UVCCamera.PIXEL_FORMAT_RGBX)
+                } catch (_: Exception) {
+                    // Some builds may reject removing a callback before preview settles.
+                }
+                frameCallbackActive = false
             }
             processedPreviewView.post {
                 processedPreviewView.setImageDrawable(null)
@@ -303,7 +310,10 @@ class UvcPreviewController(
         }
         ensureProcessedBuffers(previewWidth, previewHeight)
         processedPreviewView.visibility = ImageView.VISIBLE
-        camera.setFrameCallback(frameCallback, UVCCamera.PIXEL_FORMAT_RGBX)
+        if (!frameCallbackActive) {
+            camera.setFrameCallback(frameCallback, UVCCamera.PIXEL_FORMAT_RGBX)
+            frameCallbackActive = true
+        }
     }
 
     private fun ensureProcessedBuffers(width: Int, height: Int) {
