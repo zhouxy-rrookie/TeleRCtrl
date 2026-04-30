@@ -376,11 +376,39 @@ class UvcPreviewController(
     }
 
     private fun isTargetRed(r: Int, g: Int, b: Int): Boolean {
-        return r >= 120 && r > (g * 13) / 10 && r > (b * 13) / 10
+        val (hue, saturation, value) = computeHsv(r, g, b)
+        if (value < 60 || saturation < 90) {
+            return false
+        }
+        val redHue = hue <= 16 || hue >= 344
+        return redHue && r >= 90 && r - g >= 28 && r - b >= 20
     }
 
     private fun isTargetBlue(r: Int, g: Int, b: Int): Boolean {
-        return b >= 110 && b > (g * 12) / 10 && b > (r * 11) / 10
+        val (hue, saturation, value) = computeHsv(r, g, b)
+        if (value < 45 || saturation < 70) {
+            return false
+        }
+        val blueHue = hue in 205..250
+        return blueHue && b >= 75 && b - r >= 18 && b - g >= 10
+    }
+
+    private fun computeHsv(r: Int, g: Int, b: Int): Triple<Int, Int, Int> {
+        val max = maxOf(r, g, b)
+        val min = minOf(r, g, b)
+        val delta = max - min
+        if (delta == 0) {
+            return Triple(0, 0, max)
+        }
+
+        val hueBase = when (max) {
+            r -> ((g - b) * 60f) / delta
+            g -> 120f + ((b - r) * 60f) / delta
+            else -> 240f + ((r - g) * 60f) / delta
+        }
+        val hue = ((hueBase + 360f) % 360f).toInt()
+        val saturation = ((delta * 255f) / max).toInt()
+        return Triple(hue, saturation, max)
     }
 
     private fun selectCompatiblePreview(camera: UVCCamera): Pair<Int, Int>? {
