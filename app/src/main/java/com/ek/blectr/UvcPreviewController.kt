@@ -1,20 +1,26 @@
 package com.ek.blectr
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.hardware.usb.UsbConstants
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbInterface
 import android.view.TextureView
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.serenegiant.usb.IFrameCallback
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener
 import com.serenegiant.usb.USBMonitor.UsbControlBlock
 import com.serenegiant.usb.UVCCamera
+import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicBoolean
 
 class UvcPreviewController(
     private val activity: AppCompatActivity,
     private val previewView: TextureView,
+    private val processedPreviewView: ImageView,
     private val onStatus: (String) -> Unit,
 ) {
 
@@ -29,6 +35,15 @@ class UvcPreviewController(
     private var pendingDeviceName: String? = null
     private var autoConnectEnabled: Boolean = false
     private var permissionRequestInFlight: Boolean = false
+    private var processedPreviewEnabled: Boolean = false
+    private var previewWidth: Int = 0
+    private var previewHeight: Int = 0
+    private var processedFrameWidth: Int = 0
+    private var processedFrameHeight: Int = 0
+    private var processedBitmap: Bitmap? = null
+    private var processedPixels: IntArray? = null
+    private var frameBuffer: ByteArray? = null
+    private val frameProcessing = AtomicBoolean(false)
     private val previewSizes = listOf(
         1280 to 720,
         1024 to 768,
@@ -58,7 +73,10 @@ class UvcPreviewController(
                     ?: throw IllegalStateException("未找到兼容分辨率")
                 uvcCamera?.destroy()
                 uvcCamera = camera
+                previewWidth = selected.first
+                previewHeight = selected.second
                 rememberPreferredDevice(device)
+                updateProcessedPreviewState(camera)
                 onStatus("图传已连接: ${device.deviceName} ${selected.first}x${selected.second}")
             } catch (e: Exception) {
                 onStatus("图传打开失败: ${e.message ?: "未知错误"}")
@@ -70,6 +88,11 @@ class UvcPreviewController(
             permissionRequestInFlight = false
             uvcCamera?.destroy()
             uvcCamera = null
+            frameProcessing.set(false)
+            processedPreviewView.post {
+                processedPreviewView.setImageDrawable(null)
+                processedPreviewView.visibility = if (processedPreviewEnabled) ImageView.INVISIBLE else ImageView.GONE
+            }
             pendingDeviceName = null
             onStatus("图传已断开")
         }
@@ -103,14 +126,28 @@ class UvcPreviewController(
     fun onStop() {
         uvcCamera?.destroy()
         uvcCamera = null
+        frameProcessing.set(false)
+        processedPreviewView.setImageDrawable(null)
         usbMonitor?.unregister()
     }
 
     fun onDestroy() {
         uvcCamera?.destroy()
         uvcCamera = null
+        frameProcessing.set(false)
         usbMonitor?.destroy()
         usbMonitor = null
+    }
+
+    fun setProcessedPreviewEnabled(enabled: Boolean) {
+        processedPreviewEnabled = enabled
+        processedPreviewView.post {
+            processedPreviewView.visibility = if (enabled) ImageView.VISIBLE else ImageView.GONE
+            if (!enabled) {
+                processedPreviewView.setImageDrawable(null)
+            }
+        }
+        uvcCamera?.let { updateProcessedPreviewState(it) }
     }
 
     fun connectFirstAvailableCamera() {
@@ -248,6 +285,102 @@ class UvcPreviewController(
         }
         camera.setPreviewTexture(surfaceTexture)
         camera.startPreview()
+    }
+
+    private fun updateProcessedPreviewState(camera: UVCCamera) {
+        if (!processedPreviewEnabled) {
+            frameProcessing.set(false)
+            try {
+                camera.setFrameCallback(null, UVCCamera.PIXEL_FORMAT_RGBX)
+            } catch (_: Exception) {
+                // Some builds may reject removing a callback before preview settles.
+            }
+            processedPreviewView.post {
+                processedPreviewView.setImageDrawable(null)
+                processedPreviewView.visibility = ImageView.GONE
+            }
+            return
+        }
+        ensureProcessedBuffers(previewWidth, previewHeight)
+        processedPreviewView.visibility = ImageView.VISIBLE
+        camera.setFrameCallback(frameCallback, UVCCamera.PIXEL_FORMAT_RGBX)
+    }
+
+    private fun ensureProcessedBuffers(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) {
+            return
+        }
+        val targetWidth = (width / 2).coerceAtLeast(1)
+        val targetHeight = (height / 2).coerceAtLeast(1)
+        if (processedFrameWidth == targetWidth && processedFrameHeight == targetHeight && processedBitmap != null && frameBuffer != null) {
+            return
+        }
+        processedFrameWidth = targetWidth
+        processedFrameHeight = targetHeight
+        processedPixels = IntArray(targetWidth * targetHeight)
+        processedBitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+        frameBuffer = ByteArray(width * height * 4)
+    }
+
+    private val frameCallback = IFrameCallback { buffer ->
+        handleProcessedFrame(buffer)
+    }
+
+    private fun handleProcessedFrame(buffer: ByteBuffer) {
+        if (!processedPreviewEnabled || previewWidth <= 0 || previewHeight <= 0) {
+            return
+        }
+        if (!frameProcessing.compareAndSet(false, true)) {
+            return
+        }
+        try {
+            ensureProcessedBuffers(previewWidth, previewHeight)
+            val localBuffer = frameBuffer ?: return
+            val localPixels = processedPixels ?: return
+            val localBitmap = processedBitmap ?: return
+            buffer.rewind()
+            if (buffer.remaining() < localBuffer.size) {
+                return
+            }
+            buffer.get(localBuffer, 0, localBuffer.size)
+
+            var destIndex = 0
+            for (y in 0 until previewHeight step 2) {
+                val rowOffset = y * previewWidth * 4
+                for (x in 0 until previewWidth step 2) {
+                    val pixelOffset = rowOffset + x * 4
+                    val r = localBuffer[pixelOffset].toInt() and 0xFF
+                    val g = localBuffer[pixelOffset + 1].toInt() and 0xFF
+                    val b = localBuffer[pixelOffset + 2].toInt() and 0xFF
+
+                    val keepColor = isTargetRed(r, g, b) || isTargetBlue(r, g, b)
+                    localPixels[destIndex++] = if (keepColor) {
+                        (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+                    } else {
+                        val gray = ((r * 77) + (g * 150) + (b * 29)) shr 8
+                        (0xFF shl 24) or (gray shl 16) or (gray shl 8) or gray
+                    }
+                }
+            }
+            localBitmap.setPixels(localPixels, 0, processedFrameWidth, 0, 0, processedFrameWidth, processedFrameHeight)
+            processedPreviewView.post {
+                if (processedPreviewEnabled) {
+                    processedPreviewView.setImageBitmap(localBitmap)
+                }
+            }
+        } catch (_: Exception) {
+            // Drop bad frames and keep preview alive.
+        } finally {
+            frameProcessing.set(false)
+        }
+    }
+
+    private fun isTargetRed(r: Int, g: Int, b: Int): Boolean {
+        return r >= 120 && r > (g * 13) / 10 && r > (b * 13) / 10
+    }
+
+    private fun isTargetBlue(r: Int, g: Int, b: Int): Boolean {
+        return b >= 110 && b > (g * 12) / 10 && b > (r * 11) / 10
     }
 
     private fun selectCompatiblePreview(camera: UVCCamera): Pair<Int, Int>? {

@@ -16,6 +16,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/processed_camera_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -666,6 +677,20 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="@id/containerTopRight"
         app:layout_constraintTop_toBottomOf="@id/containerTopRight" />
+
+    <Button
+        android:id="@+id/btnVideoFilter"
+        android:layout_width="56dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_button_secondary"
+        android:text="@string/video_filter_raw"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/btnToggleTelemetry"
+        app:layout_constraintTop_toTopOf="@id/btnToggleTelemetry" />
 
     <LinearLayout
         android:id="@+id/panelDrive"

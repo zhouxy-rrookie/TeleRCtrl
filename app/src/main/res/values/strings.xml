@@ -32,6 +32,8 @@
     <string name="video_signal">Signal Good</string>
     <string name="video_latency">Latency 38ms</string>
     <string name="video_mode">UVC OTG</string>
+    <string name="video_filter_raw">原图</string>
+    <string name="video_filter_processed">滤镜</string>
     <string name="video_overlay_left">HUD-01 | 链路正常</string>
     <string name="video_overlay_right">目标跟踪待命</string>
     <string name="video_overlay_bottom">AZ 042  |  GRID E-7  |  LATENCY NOMINAL</string>

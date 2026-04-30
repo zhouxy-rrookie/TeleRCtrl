@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnProtocol: Button
     private lateinit var btnSidebarToggle: Button
     private lateinit var btnCheckUpdate: Button
+    private lateinit var btnVideoFilter: Button
     private lateinit var panelSidebar: View
     private lateinit var guideLeftEnd: Guideline
 
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var joystickRight: JoystickView
 
     private lateinit var imgLogo: ImageView
+    private lateinit var processedCameraView: ImageView
     private lateinit var btnToggleTelemetry: Button
     private lateinit var keypadMatrix: View
     private lateinit var panelTelemetry: View
@@ -71,6 +73,7 @@ class MainActivity : AppCompatActivity() {
     private var switchChassis = 0
     private var switchChannel = 0
     private var switchZone = 0
+    private var processedVideoEnabled = false
 
     companion object {
         private const val STREAM_INTERVAL_MS = 50L
@@ -104,10 +107,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        uvcController = UvcPreviewController(this, cameraView) { message ->
+        uvcController = UvcPreviewController(this, cameraView, processedCameraView) { message ->
             runOnUiThread { updateStatus(message) }
         }
         bindClickListeners()
+        updateVideoFilterButton()
         setSidebarExpanded(false)
         updateStatus("未连接")
         checkForUpdates()
@@ -125,11 +129,13 @@ class MainActivity : AppCompatActivity() {
         btnProtocol = findViewById(R.id.btnProtocol)
         btnSidebarToggle = findViewById(R.id.btnSidebarToggle)
         btnCheckUpdate = findViewById(R.id.btnCheckUpdate)
+        btnVideoFilter = findViewById(R.id.btnVideoFilter)
         panelSidebar = findViewById(R.id.panelSidebar)
         guideLeftEnd = findViewById(R.id.guideLeftEnd)
 
         cameraView = findViewById(R.id.camera_view)
         imgLogo = findViewById(R.id.imgLogo)
+        processedCameraView = findViewById(R.id.processed_camera_view)
         btnToggleTelemetry = findViewById(R.id.btnToggleTelemetry)
         keypadMatrix = findViewById(R.id.keypadMatrix)
         panelTelemetry = findViewById(R.id.panelTelemetry)
@@ -174,6 +180,14 @@ class MainActivity : AppCompatActivity() {
         applyGamePadMotion(btnProtocol, 1.04f)
         applyGamePadMotion(btnSidebarToggle, 1.04f)
         applyGamePadMotion(btnCheckUpdate, 1.04f)
+        applyGamePadMotion(btnVideoFilter, 1.04f)
+
+        btnVideoFilter.setOnClickListener {
+            processedVideoEnabled = !processedVideoEnabled
+            uvcController.setProcessedPreviewEnabled(processedVideoEnabled)
+            updateVideoFilterButton()
+            updateStatus(if (processedVideoEnabled) "已切换到滤镜图传" else "已切换到原始图传")
+        }
 
         btnCheckUpdate.setOnClickListener {
             updateStatus("正在检查更新...")
@@ -442,6 +456,14 @@ class MainActivity : AppCompatActivity() {
     private fun applyLogoVibrancy() {
         val cm = ColorMatrix().apply { setSaturation(1.6f) }
         imgLogo.colorFilter = ColorMatrixColorFilter(cm)
+    }
+
+    private fun updateVideoFilterButton() {
+        btnVideoFilter.text = if (processedVideoEnabled) {
+            getString(R.string.video_filter_processed)
+        } else {
+            getString(R.string.video_filter_raw)
+        }
     }
 
     private fun applyGamePadMotion(view: View, pressedScale: Float) {
