@@ -957,32 +957,9 @@
         app:layout_constraintTop_toTopOf="@id/panelDrive">
 
         <TextView
-            android:id="@+id/funcPump"
+            android:id="@+id/funcToggle"
             style="@style/FuncRound"
-            android:text="@string/func_pump" />
-
-        <TextView
-            android:id="@+id/funcGrab"
-            style="@style/FuncRound"
-            android:text="@string/func_grab" />
-
-        <TextView
-            android:id="@+id/funcFix"
-            style="@style/FuncRound"
-            android:text="@string/func_fix" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/colFuncRight"
-        android:layout_width="56dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@id/panelControl"
-        app:layout_constraintEnd_toStartOf="@id/panelControl"
-        app:layout_constraintStart_toEndOf="@id/guideBottomSplit"
-        app:layout_constraintTop_toTopOf="@id/panelControl">
+            android:text="@string/func_toggle" />
 
         <TextView
             android:id="@+id/funcLight1"
@@ -998,6 +975,39 @@
             android:id="@+id/funcLight3"
             style="@style/FuncRound"
             android:text="@string/func_light3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/colFuncRight"
+        android:layout_width="56dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/panelControl"
+        app:layout_constraintEnd_toStartOf="@id/panelControl"
+        app:layout_constraintStart_toEndOf="@id/guideBottomSplit"
+        app:layout_constraintTop_toTopOf="@id/panelControl">
+
+        <TextView
+            android:id="@+id/funcLock"
+            style="@style/FuncRound"
+            android:text="@string/func_lock" />
+
+        <TextView
+            android:id="@+id/funcPump"
+            style="@style/FuncRound"
+            android:text="@string/func_pump" />
+
+        <TextView
+            android:id="@+id/funcGrab"
+            style="@style/FuncRound"
+            android:text="@string/func_grab" />
+
+        <TextView
+            android:id="@+id/funcFix"
+            style="@style/FuncRound"
+            android:text="@string/func_fix" />
     </LinearLayout>
 
     <TextView

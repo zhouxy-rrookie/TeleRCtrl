@@ -72,5 +72,7 @@
     <string name="func_light1">灯1</string>
     <string name="func_light2">灯2</string>
     <string name="func_light3">灯3</string>
+    <string name="func_toggle">切换</string>
+    <string name="func_lock">锁定</string>
     <string name="check_update">检查更新</string>
 </resources>

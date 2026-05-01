@@ -14,6 +14,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private val keypadCells = mutableListOf<TextView>()
     private var selectedKeypadIndex: Int = -1
     private val funcButtons = mutableListOf<TextView>()
-    private val funcButtonStates = BooleanArray(6)
+    private val funcButtonStates = BooleanArray(8)
     private lateinit var cameraView: android.view.TextureView
     private lateinit var uvcController: UvcPreviewController
     private lateinit var usbSerialController: UsbSerialController
@@ -156,6 +157,7 @@ class MainActivity : AppCompatActivity() {
         val funcButtonIds = intArrayOf(
             R.id.funcPump, R.id.funcGrab, R.id.funcFix,
             R.id.funcLight1, R.id.funcLight2, R.id.funcLight3,
+            R.id.funcToggle, R.id.funcLock,
         )
         funcButtonIds.forEachIndexed { index, id ->
             val btn = findViewById<TextView>(id)
@@ -337,7 +339,7 @@ class MainActivity : AppCompatActivity() {
         val modeVal = switchZone * 4 + switchChannel * 2 + switchChassis
         frame[2] = ((matrixVal shl 4) or (modeVal and 0x0F)).toByte()
         var btnByte = 0
-        for (i in 0 until 6) {
+        for (i in funcButtonStates.indices) {
             if (funcButtonStates[i]) btnByte = btnByte or (1 shl i)
         }
         frame[3] = btnByte.toByte()
@@ -534,14 +536,15 @@ Byte 2 低4bit: 模式 (zone*4+channel*2+chassic)
   zone:    一区=0, 二区=1, 三区=2
   共 2*2*3 = 12 种组合 (0~11)
 
-Byte 3 bit0~5: 功能键 (1=开 0=关)
+Byte 3 bit0~7: 功能键 (1=开 0=关)
   bit0: 气泵
   bit1: 夹取
   bit2: 固定
   bit3: 灯1
   bit4: 灯2
   bit5: 灯3
-  bit6~7: 保留
+  bit6: 切换
+  bit7: 锁定
 
 Byte 4: 油门   -100~100 (上推正, 死区0.14)
 Byte 5: VW     -100~100 (左摇杆转向, 死区0.14)
@@ -551,7 +554,10 @@ Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
 连接USB后即开始持续发送, 断开即停止.
         """.trimIndent()
 
-        val scrollView = ScrollView(this)
+        val scrollView = ScrollView(this).apply {
+            isFillViewport = true
+        }
+        val horizontalScrollView = HorizontalScrollView(this)
         val textView = TextView(this).apply {
             text = protocolText
             textSize = 12f
@@ -561,7 +567,8 @@ Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
             typeface = android.graphics.Typeface.MONOSPACE
             setHorizontallyScrolling(true)
         }
-        scrollView.addView(textView)
+        horizontalScrollView.addView(textView)
+        scrollView.addView(horizontalScrollView)
 
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.protocol_title))

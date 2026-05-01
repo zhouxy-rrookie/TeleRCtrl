@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "1.8.2",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.2/app-debug.apk",
-  "releaseNotes": "修复图传偶发闪屏\n- 原图模式下不再干预 UVC 帧回调\n- 仅在开启滤镜时注册处理回调\n- 降低原始图传链路被打断的概率"
+  "versionCode": 16,
+  "versionName": "1.8.3",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.3/app-debug.apk",
+  "releaseNotes": "功能键重排 & 协议弹窗可滚动\n- 左右按键文字对调\n- 左侧顶部新增\"切换\"右侧顶部新增\"锁定\"\n- 协议弹窗支持横向+纵向滚动"
 }
