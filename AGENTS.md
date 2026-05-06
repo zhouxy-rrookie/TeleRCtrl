@@ -8,6 +8,8 @@
 ## Build Environment
 - Gradle wrapper: `9.0.0`, AGP `8.5.2`, Kotlin `1.9.24`, `compileSdk = 34`, `minSdk = 24`, `targetSdk = 34`.
 - Source/target compatibility is Java 17 (`jvmTarget = "17"`).
+- Gradle 9.0 requires JVM 17+. On this machine, set `JAVA_HOME=D:\Android\openjdk\jdk-17.0.8.101-hotspot` and `ANDROID_HOME=D:\Android\android-sdk` before running `./gradlew`, or ensure the values are exported in your shell profile.
+- `local.properties` is gitignored; keep `sdk.dir` there (e.g. `sdk.dir=D\:/Android/android-sdk`).
 
 ## Repo Shape
 - Single Android app module: `:app`.
