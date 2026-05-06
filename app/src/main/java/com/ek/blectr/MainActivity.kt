@@ -18,6 +18,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -702,6 +703,7 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
     private fun sendConfigPacket() {
         if (!usbSerialController.isConnected()) {
             updateStatus("未连接，无法发送配置")
+            Toast.makeText(this, "未连接，无法发送配置", Toast.LENGTH_SHORT).show()
             return
         }
         val payload = ByteArray(3)
@@ -722,6 +724,7 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
             usbSerialController.write(frame)
         }
         updateStatus("配置已发送")
+        Toast.makeText(this, "配置已发送: $hex", Toast.LENGTH_SHORT).show()
     }
 
     private fun updateStatus(msg: String) {

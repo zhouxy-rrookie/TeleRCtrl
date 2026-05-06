@@ -1,6 +1,6 @@
 {
-  "versionCode": 20,
-  "versionName": "1.8.7",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.7/app-debug.apk",
-  "releaseNotes": "更新检查网络适配\n- 增加到5个备用CDN镜像（jsDelivr/Fastly/G-Core/Statically）\n- 超时从8秒延长到15秒\n- 失败时显示具体URL和错误原因"
+  "versionCode": 21,
+  "versionName": "1.8.8",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.8/app-debug.apk",
+  "releaseNotes": "配置发送增加Toast反馈\n- 点击\"发送\"后弹出Toast显示十六进制内容\n- 未连接时弹Toast提示\n- 状态栏隐藏时也能看到发送反馈"
 }
