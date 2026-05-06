@@ -678,25 +678,13 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
             root.addView(rowLayout)
         }
 
-        val sendButton = Button(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                topMargin = (16 * density).toInt()
-            }
-            text = getString(R.string.config_send)
-            textSize = 16f
-            setOnClickListener {
-                sendConfigPacket()
-            }
-        }
-        root.addView(sendButton)
-
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.config_title))
             .setView(root)
-            .setPositiveButton(android.R.string.ok, null)
+            .setPositiveButton(getString(R.string.config_send)) { _, _ ->
+                sendConfigPacket()
+            }
+            .setNegativeButton("关闭", null)
             .show()
     }
 

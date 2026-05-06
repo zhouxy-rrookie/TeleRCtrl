@@ -1,6 +1,6 @@
 {
-  "versionCode": 21,
-  "versionName": "1.8.8",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.8/app-debug.apk",
-  "releaseNotes": "配置发送增加Toast反馈\n- 点击\"发送\"后弹出Toast显示十六进制内容\n- 未连接时弹Toast提示\n- 状态栏隐藏时也能看到发送反馈"
+  "versionCode": 22,
+  "versionName": "1.8.9",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.9/app-debug.apk",
+  "releaseNotes": "修复配置发送按钮无响应\n- 将\"发送\"按钮改为AlertDialog原生按钮确保点击有效"
 }
