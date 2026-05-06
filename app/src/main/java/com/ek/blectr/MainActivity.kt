@@ -729,17 +729,27 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
     }
 
     private fun checkForUpdates() {
-        UpdateManager(this).checkForUpdate { info ->
-            if (info == null) return@checkForUpdate
+        UpdateManager(this).checkForUpdate { result ->
             runOnUiThread {
-                AlertDialog.Builder(this)
-                    .setTitle("发现新版本 ${info.versionName}")
-                    .setMessage(info.releaseNotes)
-                    .setPositiveButton("立即更新") { _, _ ->
-                        UpdateManager(this).downloadAndInstall(info)
+                when (result) {
+                    is UpdateManager.UpdateResult.HasUpdate -> {
+                        updateStatus("发现新版本 ${result.info.versionName}")
+                        AlertDialog.Builder(this)
+                            .setTitle("发现新版本 ${result.info.versionName}")
+                            .setMessage(result.info.releaseNotes)
+                            .setPositiveButton("立即更新") { _, _ ->
+                                UpdateManager(this).downloadAndInstall(result.info)
+                            }
+                            .setNegativeButton("稍后", null)
+                            .show()
                     }
-                    .setNegativeButton("稍后", null)
-                    .show()
+                    is UpdateManager.UpdateResult.NoUpdate -> {
+                        updateStatus("已是最新版本")
+                    }
+                    is UpdateManager.UpdateResult.Error -> {
+                        updateStatus(result.message)
+                    }
+                }
             }
         }
     }

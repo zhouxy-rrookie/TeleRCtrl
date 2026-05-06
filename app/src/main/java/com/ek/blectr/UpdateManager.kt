@@ -24,15 +24,24 @@ class UpdateManager(private val context: Context) {
         val releaseNotes: String,
     )
 
-    private val manifestUrl =
-        "https://raw.githubusercontent.com/zhouxy-rrookie/TeleRCtrl/main/version.json"
+    sealed class UpdateResult {
+        data class HasUpdate(val info: UpdateInfo) : UpdateResult()
+        data object NoUpdate : UpdateResult()
+        data class Error(val message: String) : UpdateResult()
+    }
 
-    fun checkForUpdate(callback: (UpdateInfo?) -> Unit) {
+    private val manifestUrls = listOf(
+        "https://raw.githubusercontent.com/zhouxy-rrookie/TeleRCtrl/main/version.json",
+        "https://cdn.jsdelivr.net/gh/zhouxy-rrookie/TeleRCtrl@main/version.json",
+    )
+
+    fun checkForUpdate(callback: (UpdateResult) -> Unit) {
         Thread {
             try {
                 val currentVc = getCurrentVersionCode()
-                val json = fetchUrl(manifestUrl) ?: run {
-                    callback(null)
+                val json = fetchManifest()
+                if (json == null) {
+                    callback(UpdateResult.Error("无法访问更新服务器，请检查网络"))
                     return@Thread
                 }
                 val obj = JSONObject(json)
@@ -42,11 +51,22 @@ class UpdateManager(private val context: Context) {
                     apkUrl = obj.getString("apkUrl"),
                     releaseNotes = obj.getString("releaseNotes"),
                 )
-                callback(if (info.versionCode > currentVc) info else null)
-            } catch (_: Exception) {
-                callback(null)
+                callback(
+                    if (info.versionCode > currentVc) UpdateResult.HasUpdate(info)
+                    else UpdateResult.NoUpdate
+                )
+            } catch (e: Exception) {
+                callback(UpdateResult.Error("解析更新信息失败: ${e.message}"))
             }
         }.start()
+    }
+
+    private fun fetchManifest(): String? {
+        for (url in manifestUrls) {
+            val json = fetchUrl(url)
+            if (json != null) return json
+        }
+        return null
     }
 
     fun downloadAndInstall(info: UpdateInfo) {

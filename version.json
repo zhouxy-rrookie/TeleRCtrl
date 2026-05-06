@@ -1,6 +1,6 @@
 {
-  "versionCode": 18,
-  "versionName": "1.8.5",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.5/app-debug.apk",
-  "releaseNotes": "配置地图发送时屏幕显示十六进制数据\n- 点击"配置"页发送按钮后，屏幕底部实时展示配置帧的十六进制内容"
+  "versionCode": 19,
+  "versionName": "1.8.6",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.6/app-debug.apk",
+  "releaseNotes": "更新检查优化\n- 检查失败时显示具体错误信息，不再静默\n- 增加 jsDelivr CDN 备用地址，解决国内访问 GitHub 问题\n- 已是最新版本时显示状态提示"
 }
