@@ -1,6 +1,6 @@
 {
-  "versionCode": 19,
-  "versionName": "1.8.6",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.6/app-debug.apk",
-  "releaseNotes": "更新检查优化\n- 检查失败时显示具体错误信息，不再静默\n- 增加 jsDelivr CDN 备用地址，解决国内访问 GitHub 问题\n- 已是最新版本时显示状态提示"
+  "versionCode": 20,
+  "versionName": "1.8.7",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.7/app-debug.apk",
+  "releaseNotes": "更新检查网络适配\n- 增加到5个备用CDN镜像（jsDelivr/Fastly/G-Core/Statically）\n- 超时从8秒延长到15秒\n- 失败时显示具体URL和错误原因"
 }

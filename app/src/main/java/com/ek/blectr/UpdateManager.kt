@@ -33,15 +33,18 @@ class UpdateManager(private val context: Context) {
     private val manifestUrls = listOf(
         "https://raw.githubusercontent.com/zhouxy-rrookie/TeleRCtrl/main/version.json",
         "https://cdn.jsdelivr.net/gh/zhouxy-rrookie/TeleRCtrl@main/version.json",
+        "https://fastly.jsdelivr.net/gh/zhouxy-rrookie/TeleRCtrl@main/version.json",
+        "https://gcore.jsdelivr.net/gh/zhouxy-rrookie/TeleRCtrl@main/version.json",
+        "https://cdn.statically.io/gh/zhouxy-rrookie/TeleRCtrl/main/version.json",
     )
 
     fun checkForUpdate(callback: (UpdateResult) -> Unit) {
         Thread {
             try {
                 val currentVc = getCurrentVersionCode()
-                val json = fetchManifest()
+                val (json, lastError) = fetchManifest()
                 if (json == null) {
-                    callback(UpdateResult.Error("无法访问更新服务器，请检查网络"))
+                    callback(UpdateResult.Error(lastError ?: "无法访问更新服务器，请检查网络"))
                     return@Thread
                 }
                 val obj = JSONObject(json)
@@ -61,12 +64,14 @@ class UpdateManager(private val context: Context) {
         }.start()
     }
 
-    private fun fetchManifest(): String? {
+    private fun fetchManifest(): Pair<String?, String?> {
+        var lastError: String? = null
         for (url in manifestUrls) {
-            val json = fetchUrl(url)
-            if (json != null) return json
+            val (body, err) = fetchUrl(url)
+            if (body != null) return Pair(body, null)
+            lastError = "$url: ${err ?: "unknown"}"
         }
-        return null
+        return Pair(null, lastError)
     }
 
     fun downloadAndInstall(info: UpdateInfo) {
@@ -200,14 +205,14 @@ class UpdateManager(private val context: Context) {
         }
     }
 
-    private fun fetchUrl(urlString: String): String? {
+    private fun fetchUrl(urlString: String): Pair<String?, String?> {
         return try {
             val conn = URL(urlString).openConnection() as HttpURLConnection
-            conn.connectTimeout = 8000
-            conn.readTimeout = 8000
-            conn.inputStream.bufferedReader().use { it.readText() }
-        } catch (_: Exception) {
-            null
+            conn.connectTimeout = 15000
+            conn.readTimeout = 15000
+            Pair(conn.inputStream.bufferedReader().use { it.readText() }, null)
+        } catch (e: Exception) {
+            Pair(null, e.message ?: e.toString())
         }
     }
 }
