@@ -716,6 +716,8 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
         frame[2] = payload[1]
         frame[3] = payload[2]
         frame[4] = FRAME_TAIL.toByte()
+        val hex = frame.joinToString(" ") { String.format("%02X", it) }
+        runOnUiThread { tvPacketHex.text = hex }
         ioExecutor.execute {
             usbSerialController.write(frame)
         }

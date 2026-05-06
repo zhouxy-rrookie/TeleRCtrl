@@ -1,6 +1,6 @@
 {
-  "versionCode": 17,
-  "versionName": "1.8.4",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.4/app-debug.apk",
-  "releaseNotes": "配置地图发送 & STM32 SDK\n- 菜单\"配置\"页点击发送按钮现在真正通过串口发出\n- 新增配置帧协议 (0xCC+3字节数据+0x2B)\n- 新增 sdk/ 目录：STM32 H723 C语言驱动代码"
+  "versionCode": 18,
+  "versionName": "1.8.5",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.5/app-debug.apk",
+  "releaseNotes": "配置地图发送时屏幕显示十六进制数据\n- 点击"配置"页发送按钮后，屏幕底部实时展示配置帧的十六进制内容"
 }
