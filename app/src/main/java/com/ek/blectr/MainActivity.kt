@@ -82,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         private const val FRAME_H1 = 0x5B
         private const val FRAME_H2 = 0x5B
         private const val FRAME_TAIL = 0x2B
+        private const val CONFIG_HEADER = 0xCC
     }
 
     private val streamRunnable = object : Runnable {
@@ -551,7 +552,27 @@ Byte 5: VW     -100~100 (左摇杆转向, 死区0.14)
 Byte 6: VX     -100~100 (右摇杆横移, 死区0.14)
 Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
 
-连接USB后即开始持续发送, 断开即停止.
+┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅
+
+配置帧  |  点击"发送"时触发一次
+
+┌────┬──────────┬──────────┬──────────┬────┐
+│ 0  │    1     │    2     │    3     │ 4  │
+├────┼──────────┼──────────┼──────────┼────┤
+│ CC │ 格子0~3  │ 格子4~7  │ 格子8~11 │ 2B │
+└────┴──────────┴──────────┴──────────┴────┘
+
+Byte 0:  帧头 0xCC
+Byte 4:  帧尾 0x2B
+
+Byte 1~3: 每个格子 2bit, 从高到低排列
+  00=默认  01=R1  10=R2  11=OFF
+  格子0~3  → Byte 1 [6:5][4:3][2:1][0:1]
+  格子4~7  → Byte 2
+  格子8~11 → Byte 3
+
+仅在用户点击"配置→发送"时发送一次, 用于
+向底盘下发地图/规则配置.
         """.trimIndent()
 
         val scrollView = ScrollView(this).apply {
@@ -666,7 +687,7 @@ Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
             text = getString(R.string.config_send)
             textSize = 16f
             setOnClickListener {
-                updateStatus("配置已更新")
+                sendConfigPacket()
             }
         }
         root.addView(sendButton)
@@ -676,6 +697,29 @@ Byte 7: VY     -100~100 (右摇杆Y轴, 死区0.14)
             .setView(root)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    private fun sendConfigPacket() {
+        if (!usbSerialController.isConnected()) {
+            updateStatus("未连接，无法发送配置")
+            return
+        }
+        val payload = ByteArray(3)
+        for (i in 0 until 12) {
+            val byteIdx = i / 4
+            val shift = (3 - (i % 4)) * 2
+            payload[byteIdx] = (payload[byteIdx].toInt() or (cellStates[i] shl shift)).toByte()
+        }
+        val frame = ByteArray(5)
+        frame[0] = CONFIG_HEADER.toByte()
+        frame[1] = payload[0]
+        frame[2] = payload[1]
+        frame[3] = payload[2]
+        frame[4] = FRAME_TAIL.toByte()
+        ioExecutor.execute {
+            usbSerialController.write(frame)
+        }
+        updateStatus("配置已发送")
     }
 
     private fun updateStatus(msg: String) {

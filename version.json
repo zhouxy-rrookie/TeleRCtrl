@@ -1,6 +1,6 @@
 {
-  "versionCode": 16,
-  "versionName": "1.8.3",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.3/app-debug.apk",
-  "releaseNotes": "功能键重排 & 协议弹窗可滚动\n- 左右按键文字对调\n- 左侧顶部新增\"切换\"右侧顶部新增\"锁定\"\n- 协议弹窗支持横向+纵向滚动"
+  "versionCode": 17,
+  "versionName": "1.8.4",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.4/app-debug.apk",
+  "releaseNotes": "配置地图发送 & STM32 SDK\n- 菜单\"配置\"页点击发送按钮现在真正通过串口发出\n- 新增配置帧协议 (0xCC+3字节数据+0x2B)\n- 新增 sdk/ 目录：STM32 H723 C语言驱动代码"
 }
