@@ -19,6 +19,7 @@ import android.widget.ScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -602,91 +603,126 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
     }
 
     private fun showConfigDialog() {
-        val darkGreen = Color.parseColor("#2D7D2D")
-        val lightGreen = Color.parseColor("#55BB55")
-        val yellowGreen = Color.parseColor("#99CC33")
-        val defaultColors = intArrayOf(
-            darkGreen, lightGreen, darkGreen,
-            lightGreen, yellowGreen, lightGreen,
-            darkGreen, lightGreen, yellowGreen,
-            lightGreen, darkGreen, lightGreen,
-        )
-        val stateColors = intArrayOf(
-            Color.parseColor("#FF4444"),
-            Color.parseColor("#4488FF"),
-            Color.parseColor("#888888"),
-        )
-        val stateLabels = arrayOf("R1", "R2", "OFF")
-        val stateTextColors = intArrayOf(
-            Color.WHITE,
-            Color.WHITE,
-            Color.WHITE,
-        )
-        val borderColor = Color.parseColor("#66EE781F")
+        for (i in 0 until 12) cellStates[i] = 0
+
         val density = resources.displayMetrics.density
-
-        val root = LinearLayout(this).apply {
+        val scroll = ScrollView(this).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                (280 * density).toInt(),
+            )
+        }
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 24, 24, 24)
+            setPadding(
+                (16 * density).toInt(), (16 * density).toInt(),
+                (16 * density).toInt(), (16 * density).toInt(),
+            )
         }
+        scroll.addView(content)
 
-        fun GradientDrawable.applyFill(color: Int) {
-            setColor(color)
-        }
-
-        fun TextView.updateAppearance(index: Int) {
-            val state = cellStates[index]
-            val bg = background as GradientDrawable
-            if (state == 0) {
-                bg.applyFill(defaultColors[index])
-                setTextColor(defaultColors[index])
-                text = ""
-            } else {
-                val si = state - 1
-                bg.applyFill(stateColors[si])
-                setTextColor(stateTextColors[si])
-                text = stateLabels[si]
-            }
-        }
-
-        val cellViews = Array(12) { index ->
-            val bg = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = 8f * density
-                setStroke((2f * density).toInt(), borderColor)
-                setColor(defaultColors[index])
-            }
-            TextView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(0, (140 * density).toInt(), 1f).apply {
-                    setMargins((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
-                }
+        fun makeSegmentButton(label: String, bgRes: Int): TextView {
+            return TextView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(0, (42 * density).toInt(), 1f)
+                background = ContextCompat.getDrawable(this@MainActivity, bgRes)
                 gravity = Gravity.CENTER
-                textSize = 16f
-                background = bg
-                setOnClickListener {
-                    cellStates[index] = (cellStates[index] + 1) % 4
-                    updateAppearance(index)
+                text = label
+                textSize = 13f
+                setTextColor(
+                    ContextCompat.getColorStateList(this@MainActivity, R.color.toggle_segment_text)
+                )
+            }
+        }
+
+        data class ButtonItem(val btn: TextView, val cellIdx: Int)
+        data class ButtonGroup(val items: List<ButtonItem>, val groupCellIndices: IntArray)
+
+        val groups = mutableListOf<ButtonGroup>()
+
+        fun buildRow(
+            labels: List<String>,
+            cellStart: Int,
+            groupCellIndices: IntArray,
+        ) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_toggle_group)
+                setPadding(1, 1, 1, 1)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply {
+                    topMargin = (8 * density).toInt()
+                }
+            }
+            val bgResList = when (labels.size) {
+                2 -> listOf(R.drawable.bg_toggle_segment_left, R.drawable.bg_toggle_segment_right)
+                3 -> listOf(
+                    R.drawable.bg_toggle_segment_left,
+                    R.drawable.bg_toggle_segment_center,
+                    R.drawable.bg_toggle_segment_right,
+                )
+                else -> List(labels.size) { R.drawable.bg_toggle_segment_center }
+            }
+            val items = mutableListOf<ButtonItem>()
+            labels.forEachIndexed { i, label ->
+                if (i > 0) {
+                    row.addView(View(this@MainActivity).apply {
+                        layoutParams = LinearLayout.LayoutParams(
+                            1, ViewGroup.LayoutParams.MATCH_PARENT,
+                        )
+                        setBackgroundColor(Color.parseColor("#55EE781F"))
+                    })
+                }
+                val cellIdx = cellStart + i
+                val btn = makeSegmentButton(label, bgResList[i])
+                btn.isSelected = false
+                items.add(ButtonItem(btn, cellIdx))
+                row.addView(btn)
+            }
+            content.addView(row)
+            groups.add(ButtonGroup(items, groupCellIndices))
+        }
+
+        when (switchZone) {
+            0 -> {
+                buildRow(listOf("\u53D6\u6746", "\u6536\u6746"), 0, intArrayOf(0, 1))
+                buildRow(listOf("\u62AC\u5347\u4F4E", "\u62AC\u5347\u4E2D", "\u62AC\u5347\u9AD8"), 2, intArrayOf(2, 3, 4))
+                buildRow(listOf("\u6362\u67461", "\u6362\u67462"), 5, intArrayOf(5, 6))
+            }
+            1 -> {
+                buildRow(listOf("\u6885\u6797\u4F4E", "\u6885\u6797\u4E2D", "\u6885\u6797\u9AD8"), 0, intArrayOf(0, 1, 2, 3, 4, 5))
+                buildRow(listOf("\u56DE\u6536", "\u653E\u56DE", "\u8D8A\u533A"), 3, intArrayOf(0, 1, 2, 3, 4, 5))
+            }
+            2 -> {
+                buildRow(listOf("R2\u9AD8", "R2\u4F4E"), 0, intArrayOf(0, 1, 2, 3))
+                buildRow(listOf("\u653B\u51FB\u4F4E", "\u653B\u51FB\u9AD8"), 2, intArrayOf(0, 1, 2, 3))
+                buildRow(listOf("\u653E\u5757", "\u6361\u5757", "\u653E\u6746"), 4, intArrayOf(4, 5, 6))
+            }
+        }
+
+        for (group in groups) {
+            for (item in group.items) {
+                item.btn.setOnClickListener {
+                    for (ci in group.groupCellIndices) cellStates[ci] = 0
+                    cellStates[item.cellIdx] = 1
+                    for (g in groups) {
+                        for (it in g.items) {
+                            it.btn.isSelected = cellStates[it.cellIdx] == 1
+                        }
+                    }
                 }
             }
         }
 
-        for (row in 0 until 4) {
-            val rowLayout = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-            }
-            for (col in 0 until 3) {
-                rowLayout.addView(cellViews[row * 3 + col])
-            }
-            root.addView(rowLayout)
-        }
-
+        val zoneLabel = arrayOf("\u4E00\u533A", "\u4E8C\u533A", "\u4E09\u533A")[switchZone]
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.config_title))
-            .setView(root)
+            .setTitle("${getString(R.string.config_title)} - $zoneLabel")
+            .setView(scroll)
             .setPositiveButton(getString(R.string.config_send)) { _, _ ->
                 sendConfigPacket()
             }
-            .setNegativeButton("关闭", null)
+            .setNegativeButton("\u5173\u95ED", null)
             .show()
     }
 

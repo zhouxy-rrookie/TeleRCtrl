@@ -1,6 +1,6 @@
 {
-  "versionCode": 23,
-  "versionName": "1.9.0",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.9.0/app-debug.apk",
-  "releaseNotes": "配置帧改为9字节，与控制帧对齐\n- 帧头: 5C 5C, 帧尾: 2C\n- 协议与原5字节帧兼容，多余位补0\n- STM32 SDK同步更新"
+  "versionCode": 24,
+  "versionName": "1.10.0",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.0/app-debug.apk",
+  "releaseNotes": "配置矩阵改为区域分段按钮\n- 一区: 取杆/收杆, 抬升低/中/高, 换杆1/2 (每行单选)\n- 二区: 梅林低/中/高, 回收/放回/越区 (六选一)\n- 三区: R2高/低+攻击低/高 (四选一), 放块/捡块/放杆 (三选一)"
 }
