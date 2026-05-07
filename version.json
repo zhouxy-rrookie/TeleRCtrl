@@ -1,6 +1,6 @@
 {
-  "versionCode": 22,
-  "versionName": "1.8.9",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.8.9/app-debug.apk",
-  "releaseNotes": "修复配置发送按钮无响应\n- 将\"发送\"按钮改为AlertDialog原生按钮确保点击有效"
+  "versionCode": 23,
+  "versionName": "1.9.0",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.9.0/app-debug.apk",
+  "releaseNotes": "配置帧改为9字节，与控制帧对齐\n- 帧头: 5C 5C, 帧尾: 2C\n- 协议与原5字节帧兼容，多余位补0\n- STM32 SDK同步更新"
 }

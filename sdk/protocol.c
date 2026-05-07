@@ -6,8 +6,6 @@ enum {
     ST_WAIT_H1,
     ST_COLLECT_PAYLOAD,
     ST_WAIT_TAIL,
-    ST_CONFIG_WAIT_PAYLOAD,
-    ST_CONFIG_WAIT_TAIL,
 };
 
 /* ───── Parse a received 9-byte telemetry frame ───── */
@@ -37,13 +35,13 @@ static void parse_control(tele_control_t *c, const uint8_t *b) {
     c->lift     = (int8_t)b[7];
 }
 
-/* ───── Parse a received 5-byte config frame ───── */
+/* ───── Parse a received 9-byte config frame ───── */
 
 static void parse_config(tele_config_t *c, const uint8_t *b) {
     for (int i = 0; i < CELL_COUNT; i++) {
         int byte_idx = i / 4;
         int shift    = (3 - (i % 4)) * 2;
-        c->cells[i] = (b[1 + byte_idx] >> shift) & 0x03;
+        c->cells[i] = (b[2 + byte_idx] >> shift) & 0x03;
     }
     c->received = true;
 }
@@ -55,11 +53,12 @@ void tele_init(tele_protocol_t *p) {
 }
 
 void tele_reset(tele_protocol_t *p) {
-    p->__parse_state  = ST_WAIT_H0;
-    p->__buf_idx      = 0;
-    p->__last_frame_ms = 0;
-    p->ctrl.matrix_key = 0xFF;
-    p->cfg.received    = false;
+    p->__parse_state     = ST_WAIT_H0;
+    p->__buf_idx         = 0;
+    p->__last_frame_ms   = 0;
+    p->__is_config_frame = false;
+    p->ctrl.matrix_key   = 0xFF;
+    p->cfg.received      = false;
 }
 
 void tele_config_ack(tele_protocol_t *p) {
@@ -74,29 +73,38 @@ bool tele_feed(tele_protocol_t *p, uint8_t byte_, uint32_t tick_ms) {
         if (byte_ == FRAME_HEADER_0) {
             p->__buf[0] = byte_;
             p->__buf_idx = 1;
+            p->__is_config_frame = false;
             p->__parse_state = ST_WAIT_H1;
-        } else if (byte_ == CONFIG_HEADER) {
+        } else if (byte_ == CONFIG_HEADER_0) {
             p->__buf[0] = byte_;
             p->__buf_idx = 1;
-            p->__parse_state = ST_CONFIG_WAIT_PAYLOAD;
+            p->__is_config_frame = true;
+            p->__parse_state = ST_WAIT_H1;
         }
         break;
 
-    /* ── Wait for second header byte (telemetry only) ── */
-    case ST_WAIT_H1:
-        if (byte_ == FRAME_HEADER_1) {
+    /* ── Wait for second header byte ── */
+    case ST_WAIT_H1: {
+        uint8_t expected_h1 = p->__is_config_frame ? CONFIG_HEADER_1 : FRAME_HEADER_1;
+        if (byte_ == expected_h1) {
             p->__buf[1] = byte_;
             p->__buf_idx = 2;
             p->__parse_state = ST_COLLECT_PAYLOAD;
         } else if (byte_ == FRAME_HEADER_0) {
             p->__buf[0] = byte_;
             p->__buf_idx = 1;
+            p->__is_config_frame = false;
+        } else if (byte_ == CONFIG_HEADER_0) {
+            p->__buf[0] = byte_;
+            p->__buf_idx = 1;
+            p->__is_config_frame = true;
         } else {
             p->__parse_state = ST_WAIT_H0;
         }
         break;
+    }
 
-    /* ── Collect telemetry payload bytes 2..7 ── */
+    /* ── Collect payload bytes 2..7 ── */
     case ST_COLLECT_PAYLOAD:
         p->__buf[p->__buf_idx++] = byte_;
         if (p->__buf_idx == 8) {
@@ -104,41 +112,25 @@ bool tele_feed(tele_protocol_t *p, uint8_t byte_, uint32_t tick_ms) {
         }
         break;
 
-    /* ── Expect telemetry tail ── */
-    case ST_WAIT_TAIL:
-        if (byte_ == FRAME_TAIL) {
+    /* ── Expect tail ── */
+    case ST_WAIT_TAIL: {
+        uint8_t expected_tail = p->__is_config_frame ? CONFIG_TAIL : FRAME_TAIL;
+        if (byte_ == expected_tail) {
             p->__buf[8] = byte_;
             p->__last_frame_ms = tick_ms;
-            parse_control(&p->ctrl, p->__buf);
+            if (p->__is_config_frame) {
+                parse_config(&p->cfg, p->__buf);
+            } else {
+                parse_control(&p->ctrl, p->__buf);
+            }
             p->__parse_state = ST_WAIT_H0;
             p->__buf_idx = 0;
-            return true;                     /* telemetry frame done */
+            return true;
         }
         p->__parse_state = ST_WAIT_H0;
         p->__buf_idx = 0;
         break;
-
-    /* ── Collect config payload bytes 1..3 ── */
-    case ST_CONFIG_WAIT_PAYLOAD:
-        p->__buf[p->__buf_idx++] = byte_;
-        if (p->__buf_idx == 4) {            /* collected 0xCC + 3 payload */
-            p->__parse_state = ST_CONFIG_WAIT_TAIL;
-        }
-        break;
-
-    /* ── Expect config tail ── */
-    case ST_CONFIG_WAIT_TAIL:
-        if (byte_ == FRAME_TAIL) {
-            p->__buf[4] = byte_;
-            p->__last_frame_ms = tick_ms;
-            parse_config(&p->cfg, p->__buf);
-            p->__parse_state = ST_WAIT_H0;
-            p->__buf_idx = 0;
-            return true;                     /* config frame done */
-        }
-        p->__parse_state = ST_WAIT_H0;
-        p->__buf_idx = 0;
-        break;
+    }
     }
 
     return false;

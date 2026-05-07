@@ -11,11 +11,13 @@ extern "C" {
 /* ───── Frame constants ───── */
 
 #define FRAME_LEN           9
-#define CONFIG_FRAME_LEN    5
+#define CONFIG_FRAME_LEN    9
 #define FRAME_HEADER_0      0x5B
 #define FRAME_HEADER_1      0x5B
-#define CONFIG_HEADER       0xCC
+#define CONFIG_HEADER_0     0x5C
+#define CONFIG_HEADER_1     0x5C
 #define FRAME_TAIL          0x2B
+#define CONFIG_TAIL         0x2C
 
 #define AXIS_DEAD_ZONE      14
 #define CELL_COUNT          12
@@ -43,7 +45,7 @@ typedef struct {
     int8_t  lift;
 } tele_control_t;
 
-/* ───── Config (5-byte, on demand) ───── */
+/* ───── Config (9-byte, on demand) ───── */
 
 typedef struct {
     uint8_t cells[CELL_COUNT];   /* each 0..3: 0=default 1=R1 2=R2 3=OFF */
@@ -61,6 +63,7 @@ typedef struct {
     int     __buf_idx;
     uint8_t __buf[FRAME_LEN];
     uint32_t __last_frame_ms;
+    bool    __is_config_frame;
 } tele_protocol_t;
 
 /* ───── API ───── */

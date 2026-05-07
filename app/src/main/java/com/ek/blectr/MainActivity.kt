@@ -83,7 +83,9 @@ class MainActivity : AppCompatActivity() {
         private const val FRAME_H1 = 0x5B
         private const val FRAME_H2 = 0x5B
         private const val FRAME_TAIL = 0x2B
-        private const val CONFIG_HEADER = 0xCC
+        private const val CONFIG_H1 = 0x5C
+        private const val CONFIG_H2 = 0x5C
+        private const val CONFIG_TAIL = 0x2C
     }
 
     private val streamRunnable = object : Runnable {
@@ -700,12 +702,16 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
             val shift = (3 - (i % 4)) * 2
             payload[byteIdx] = (payload[byteIdx].toInt() or (cellStates[i] shl shift)).toByte()
         }
-        val frame = ByteArray(5)
-        frame[0] = CONFIG_HEADER.toByte()
-        frame[1] = payload[0]
-        frame[2] = payload[1]
-        frame[3] = payload[2]
-        frame[4] = FRAME_TAIL.toByte()
+        val frame = ByteArray(9)
+        frame[0] = CONFIG_H1.toByte()
+        frame[1] = CONFIG_H2.toByte()
+        frame[2] = payload[0]
+        frame[3] = payload[1]
+        frame[4] = payload[2]
+        frame[5] = 0
+        frame[6] = 0
+        frame[7] = 0
+        frame[8] = CONFIG_TAIL.toByte()
         val hex = frame.joinToString(" ") { String.format("%02X", it) }
         runOnUiThread { tvPacketHex.text = hex }
         ioExecutor.execute {
