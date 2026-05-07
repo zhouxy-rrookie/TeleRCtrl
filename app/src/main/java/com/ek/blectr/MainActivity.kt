@@ -52,10 +52,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imgLogo: ImageView
     private lateinit var processedCameraView: ImageView
     private lateinit var btnToggleTelemetry: Button
-    private lateinit var keypadMatrix: View
-    private lateinit var panelTelemetry: View
-    private val keypadCells = mutableListOf<TextView>()
+    private lateinit var keypadMatrix: LinearLayout
     private var selectedKeypadIndex: Int = -1
+    private val keypadButtons = mutableListOf<TextView>()
+    private lateinit var panelTelemetry: View
     private val funcButtons = mutableListOf<TextView>()
     private val funcButtonStates = BooleanArray(8)
     private lateinit var cameraView: android.view.TextureView
@@ -148,16 +148,7 @@ class MainActivity : AppCompatActivity() {
         drivePad = findViewById(R.id.drivePad)
         joystickRight = findViewById(R.id.joystickRight)
 
-        val keyMatrixIds = intArrayOf(
-            R.id.keyMatrix1, R.id.keyMatrix2, R.id.keyMatrix3, R.id.keyMatrixA,
-            R.id.keyMatrix4, R.id.keyMatrix5, R.id.keyMatrix6, R.id.keyMatrixB,
-            R.id.keyMatrix7, R.id.keyMatrix8, R.id.keyMatrix9, R.id.keyMatrixC,
-        )
-        keyMatrixIds.forEach { id ->
-            val cell = findViewById<TextView>(id)
-            cell.setOnClickListener { onKeypadCellClicked(cell) }
-            keypadCells.add(cell)
-        }
+        rebuildKeypad()
 
         val funcButtonIds = intArrayOf(
             R.id.funcPump, R.id.funcGrab, R.id.funcFix,
@@ -242,7 +233,10 @@ class MainActivity : AppCompatActivity() {
                 findViewById(R.id.switchZone3),
             ),
             defaultIndex = 0,
-        ) { index -> switchZone = index }
+        ) { index ->
+            switchZone = index
+            rebuildKeypad()
+        }
 
         joystickRight.listener = object : JoystickView.Listener {
             override fun onMove(normalizedX: Float, normalizedY: Float) {
@@ -418,28 +412,90 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onKeypadCellClicked(cell: TextView) {
-        val index = keypadCells.indexOf(cell)
-        if (index < 0) return
-        if (selectedKeypadIndex == index) return
-        val unselectedBg = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 8f * resources.displayMetrics.density
-            setColor(Color.parseColor("#C00A2037"))
-            setStroke((1f * resources.displayMetrics.density).toInt(), Color.parseColor("#66EE781F"))
+    private fun rebuildKeypad() {
+        keypadMatrix.removeAllViews()
+        keypadButtons.clear()
+        selectedKeypadIndex = -1
+        for (i in 0 until 12) cellStates[i] = 0
+
+        val density = resources.displayMetrics.density
+
+        data class KeyButton(val btn: TextView, val cellIdx: Int)
+        val groups = mutableListOf<Pair<List<KeyButton>, IntArray>>()
+
+        fun makeBtn(label: String, bgRes: Int): TextView {
+            return TextView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(0, (38 * density).toInt(), 1f)
+                background = ContextCompat.getDrawable(this@MainActivity, bgRes)
+                gravity = Gravity.CENTER
+                text = label
+                textSize = 12f
+                setTextColor(
+                    ContextCompat.getColorStateList(this@MainActivity, R.color.toggle_segment_text)
+                )
+            }
         }
-        val selectedBg = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 8f * resources.displayMetrics.density
-            setColor(Color.parseColor("#CCEE781F"))
+
+        fun buildRow(labels: List<String>, cellStart: Int, groupCells: IntArray) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_toggle_group)
+                setPadding(1, 1, 1, 1)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply { topMargin = (6 * density).toInt() }
+            }
+            val bgRes = when (labels.size) {
+                2 -> listOf(R.drawable.bg_toggle_segment_left, R.drawable.bg_toggle_segment_right)
+                3 -> listOf(R.drawable.bg_toggle_segment_left, R.drawable.bg_toggle_segment_center, R.drawable.bg_toggle_segment_right)
+                else -> List(labels.size) { R.drawable.bg_toggle_segment_center }
+            }
+            val btns = mutableListOf<KeyButton>()
+            labels.forEachIndexed { i, label ->
+                if (i > 0) row.addView(View(this@MainActivity).apply {
+                    layoutParams = LinearLayout.LayoutParams(1, ViewGroup.LayoutParams.MATCH_PARENT)
+                    setBackgroundColor(Color.parseColor("#55EE781F"))
+                })
+                val cellIdx = cellStart + i
+                val btn = makeBtn(label, bgRes[i])
+                btns.add(KeyButton(btn, cellIdx))
+                row.addView(btn)
+            }
+            keypadMatrix.addView(row)
+            groups.add(Pair(btns, groupCells))
         }
-        if (selectedKeypadIndex >= 0) {
-            keypadCells[selectedKeypadIndex].background = unselectedBg
-            keypadCells[selectedKeypadIndex].setTextColor(resources.getColor(R.color.text_primary, theme))
+
+        when (switchZone) {
+            0 -> {
+                buildRow(listOf("\u53D6\u6746", "\u6536\u6746"), 0, intArrayOf(0, 1))
+                buildRow(listOf("\u62AC\u5347\u4F4E", "\u62AC\u5347\u4E2D", "\u62AC\u5347\u9AD8"), 2, intArrayOf(2, 3, 4))
+                buildRow(listOf("\u6362\u67461", "\u6362\u67462"), 5, intArrayOf(5, 6))
+            }
+            1 -> {
+                buildRow(listOf("\u6885\u6797\u4F4E", "\u6885\u6797\u4E2D", "\u6885\u6797\u9AD8"), 0, intArrayOf(0, 1, 2, 3, 4, 5))
+                buildRow(listOf("\u56DE\u6536", "\u653E\u56DE", "\u8D8A\u533A"), 3, intArrayOf(0, 1, 2, 3, 4, 5))
+            }
+            2 -> {
+                buildRow(listOf("R2\u9AD8", "R2\u4F4E"), 0, intArrayOf(0, 1, 2, 3))
+                buildRow(listOf("\u653B\u51FB\u4F4E", "\u653B\u51FB\u9AD8"), 2, intArrayOf(0, 1, 2, 3))
+                buildRow(listOf("\u653E\u5757", "\u6361\u5757", "\u653E\u6746"), 4, intArrayOf(4, 5, 6))
+            }
         }
-        selectedKeypadIndex = index
-        cell.background = selectedBg
-        cell.setTextColor(Color.WHITE)
+
+        val allBtnItems = groups.flatMap { it.first }
+        for ((btns, groupCells) in groups) {
+            for ((btnIdx, kb) in btns.withIndex()) {
+                kb.btn.setOnClickListener {
+                    for (ci in groupCells) cellStates[ci] = 0
+                    cellStates[kb.cellIdx] = 1
+                    selectedKeypadIndex = kb.cellIdx
+                    for (item in allBtnItems) {
+                        item.btn.isSelected = cellStates[item.cellIdx] == 1
+                    }
+                }
+            }
+        }
     }
 
     private fun onFuncButtonClicked(index: Int, btn: TextView) {
@@ -603,122 +659,87 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
     }
 
     private fun showConfigDialog() {
-        for (i in 0 until 12) cellStates[i] = 0
-
+        val darkGreen = Color.parseColor("#2D7D2D")
+        val lightGreen = Color.parseColor("#55BB55")
+        val yellowGreen = Color.parseColor("#99CC33")
+        val defaultColors = intArrayOf(
+            darkGreen, lightGreen, darkGreen,
+            lightGreen, yellowGreen, lightGreen,
+            darkGreen, lightGreen, yellowGreen,
+            lightGreen, darkGreen, lightGreen,
+        )
+        val stateColors = intArrayOf(
+            Color.parseColor("#FF4444"),
+            Color.parseColor("#4488FF"),
+            Color.parseColor("#888888"),
+        )
+        val stateLabels = arrayOf("R1", "R2", "OFF")
+        val stateTextColors = intArrayOf(
+            Color.WHITE,
+            Color.WHITE,
+            Color.WHITE,
+        )
+        val borderColor = Color.parseColor("#66EE781F")
         val density = resources.displayMetrics.density
-        val scroll = ScrollView(this).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                (280 * density).toInt(),
-            )
-        }
-        val content = LinearLayout(this).apply {
+
+        val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(
-                (16 * density).toInt(), (16 * density).toInt(),
-                (16 * density).toInt(), (16 * density).toInt(),
-            )
+            setPadding(24, 24, 24, 24)
         }
-        scroll.addView(content)
 
-        fun makeSegmentButton(label: String, bgRes: Int): TextView {
-            return TextView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(0, (42 * density).toInt(), 1f)
-                background = ContextCompat.getDrawable(this@MainActivity, bgRes)
+        fun GradientDrawable.applyFill(color: Int) {
+            setColor(color)
+        }
+
+        fun TextView.updateAppearance(index: Int) {
+            val state = cellStates[index]
+            val bg = background as GradientDrawable
+            if (state == 0) {
+                bg.applyFill(defaultColors[index])
+                setTextColor(defaultColors[index])
+                text = ""
+            } else {
+                val si = state - 1
+                bg.applyFill(stateColors[si])
+                setTextColor(stateTextColors[si])
+                text = stateLabels[si]
+            }
+        }
+
+        val cellViews = Array(12) { index ->
+            val bg = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 8f * density
+                setStroke((2f * density).toInt(), borderColor)
+                setColor(defaultColors[index])
+            }
+            TextView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(0, (140 * density).toInt(), 1f).apply {
+                    setMargins((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
+                }
                 gravity = Gravity.CENTER
-                text = label
-                textSize = 13f
-                setTextColor(
-                    ContextCompat.getColorStateList(this@MainActivity, R.color.toggle_segment_text)
-                )
+                textSize = 16f
+                background = bg
+                setOnClickListener {
+                    cellStates[index] = (cellStates[index] + 1) % 4
+                    updateAppearance(index)
+                }
             }
         }
 
-        data class ButtonItem(val btn: TextView, val cellIdx: Int)
-        data class ButtonGroup(val items: List<ButtonItem>, val groupCellIndices: IntArray)
-
-        val groups = mutableListOf<ButtonGroup>()
-
-        fun buildRow(
-            labels: List<String>,
-            cellStart: Int,
-            groupCellIndices: IntArray,
-        ) {
-            val row = LinearLayout(this).apply {
+        for (row in 0 until 4) {
+            val rowLayout = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
-                background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_toggle_group)
-                setPadding(1, 1, 1, 1)
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                ).apply {
-                    topMargin = (8 * density).toInt()
-                }
             }
-            val bgResList = when (labels.size) {
-                2 -> listOf(R.drawable.bg_toggle_segment_left, R.drawable.bg_toggle_segment_right)
-                3 -> listOf(
-                    R.drawable.bg_toggle_segment_left,
-                    R.drawable.bg_toggle_segment_center,
-                    R.drawable.bg_toggle_segment_right,
-                )
-                else -> List(labels.size) { R.drawable.bg_toggle_segment_center }
+            for (col in 0 until 3) {
+                rowLayout.addView(cellViews[row * 3 + col])
             }
-            val items = mutableListOf<ButtonItem>()
-            labels.forEachIndexed { i, label ->
-                if (i > 0) {
-                    row.addView(View(this@MainActivity).apply {
-                        layoutParams = LinearLayout.LayoutParams(
-                            1, ViewGroup.LayoutParams.MATCH_PARENT,
-                        )
-                        setBackgroundColor(Color.parseColor("#55EE781F"))
-                    })
-                }
-                val cellIdx = cellStart + i
-                val btn = makeSegmentButton(label, bgResList[i])
-                btn.isSelected = false
-                items.add(ButtonItem(btn, cellIdx))
-                row.addView(btn)
-            }
-            content.addView(row)
-            groups.add(ButtonGroup(items, groupCellIndices))
+            root.addView(rowLayout)
         }
 
-        when (switchZone) {
-            0 -> {
-                buildRow(listOf("\u53D6\u6746", "\u6536\u6746"), 0, intArrayOf(0, 1))
-                buildRow(listOf("\u62AC\u5347\u4F4E", "\u62AC\u5347\u4E2D", "\u62AC\u5347\u9AD8"), 2, intArrayOf(2, 3, 4))
-                buildRow(listOf("\u6362\u67461", "\u6362\u67462"), 5, intArrayOf(5, 6))
-            }
-            1 -> {
-                buildRow(listOf("\u6885\u6797\u4F4E", "\u6885\u6797\u4E2D", "\u6885\u6797\u9AD8"), 0, intArrayOf(0, 1, 2, 3, 4, 5))
-                buildRow(listOf("\u56DE\u6536", "\u653E\u56DE", "\u8D8A\u533A"), 3, intArrayOf(0, 1, 2, 3, 4, 5))
-            }
-            2 -> {
-                buildRow(listOf("R2\u9AD8", "R2\u4F4E"), 0, intArrayOf(0, 1, 2, 3))
-                buildRow(listOf("\u653B\u51FB\u4F4E", "\u653B\u51FB\u9AD8"), 2, intArrayOf(0, 1, 2, 3))
-                buildRow(listOf("\u653E\u5757", "\u6361\u5757", "\u653E\u6746"), 4, intArrayOf(4, 5, 6))
-            }
-        }
-
-        for (group in groups) {
-            for (item in group.items) {
-                item.btn.setOnClickListener {
-                    for (ci in group.groupCellIndices) cellStates[ci] = 0
-                    cellStates[item.cellIdx] = 1
-                    for (g in groups) {
-                        for (it in g.items) {
-                            it.btn.isSelected = cellStates[it.cellIdx] == 1
-                        }
-                    }
-                }
-            }
-        }
-
-        val zoneLabel = arrayOf("\u4E00\u533A", "\u4E8C\u533A", "\u4E09\u533A")[switchZone]
         AlertDialog.Builder(this)
-            .setTitle("${getString(R.string.config_title)} - $zoneLabel")
-            .setView(scroll)
+            .setTitle(getString(R.string.config_title))
+            .setView(root)
             .setPositiveButton(getString(R.string.config_send)) { _, _ ->
                 sendConfigPacket()
             }
