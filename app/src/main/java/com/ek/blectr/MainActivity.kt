@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity() {
         }
         frame[3] = btnByte.toByte()
         val deadZone = 0.14f
-        frame[4] = toAxisByte(if (abs(axisY) < deadZone) 0f else axisY)
+        frame[4] = toAxisByte(axisY)
         frame[5] = toAxisByte(if (abs(axisYaw) < deadZone) 0f else axisYaw)
         frame[6] = toAxisByte(if (abs(axisX) < deadZone) 0f else axisX)
         frame[7] = toAxisByte(if (abs(axisJoystickY) < deadZone) 0f else axisJoystickY)
