@@ -1,6 +1,6 @@
 {
-  "versionCode": 25,
-  "versionName": "1.10.1",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.1/app-debug.apk",
-  "releaseNotes": "右上角矩阵替换为分区选项按钮\n- 一区: 取杆/收杆, 抬升低/中/高, 换杆1/2\n- 二区: 梅林低/中/高, 回收/放回/越区 (六选一)\n- 三区: R2高/低+攻击/低/高 (四选一), 放块/捡块/放杆 (三选一)\n- 配置对话框保持原样"
+  "versionCode": 26,
+  "versionName": "1.10.2",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.2/app-debug.apk",
+  "releaseNotes": "一区换杆行增加空选项\n- 换杆1/换杆2行支持取消选中，再次点击已选项回到空状态"
 }

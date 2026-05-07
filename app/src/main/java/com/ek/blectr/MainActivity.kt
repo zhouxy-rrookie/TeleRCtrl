@@ -421,7 +421,7 @@ class MainActivity : AppCompatActivity() {
         val density = resources.displayMetrics.density
 
         data class KeyButton(val btn: TextView, val cellIdx: Int)
-        val groups = mutableListOf<Pair<List<KeyButton>, IntArray>>()
+        val groups = mutableListOf<Triple<List<KeyButton>, IntArray, Boolean>>()
 
         fun makeBtn(label: String, bgRes: Int): TextView {
             return TextView(this).apply {
@@ -436,7 +436,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        fun buildRow(labels: List<String>, cellStart: Int, groupCells: IntArray) {
+        fun buildRow(labels: List<String>, cellStart: Int, groupCells: IntArray, toggleable: Boolean = false) {
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_toggle_group)
@@ -463,14 +463,14 @@ class MainActivity : AppCompatActivity() {
                 row.addView(btn)
             }
             keypadMatrix.addView(row)
-            groups.add(Pair(btns, groupCells))
+            groups.add(Triple(btns, groupCells, toggleable))
         }
 
         when (switchZone) {
             0 -> {
                 buildRow(listOf("\u53D6\u6746", "\u6536\u6746"), 0, intArrayOf(0, 1))
                 buildRow(listOf("\u62AC\u5347\u4F4E", "\u62AC\u5347\u4E2D", "\u62AC\u5347\u9AD8"), 2, intArrayOf(2, 3, 4))
-                buildRow(listOf("\u6362\u67461", "\u6362\u67462"), 5, intArrayOf(5, 6))
+                buildRow(listOf("\u6362\u67461", "\u6362\u67462"), 5, intArrayOf(5, 6), toggleable = true)
             }
             1 -> {
                 buildRow(listOf("\u6885\u6797\u4F4E", "\u6885\u6797\u4E2D", "\u6885\u6797\u9AD8"), 0, intArrayOf(0, 1, 2, 3, 4, 5))
@@ -484,12 +484,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         val allBtnItems = groups.flatMap { it.first }
-        for ((btns, groupCells) in groups) {
+        for ((btns, groupCells, toggleable) in groups) {
             for ((btnIdx, kb) in btns.withIndex()) {
                 kb.btn.setOnClickListener {
-                    for (ci in groupCells) cellStates[ci] = 0
-                    cellStates[kb.cellIdx] = 1
-                    selectedKeypadIndex = kb.cellIdx
+                    if (toggleable && cellStates[kb.cellIdx] != 0) {
+                        cellStates[kb.cellIdx] = 0
+                        selectedKeypadIndex = -1
+                    } else {
+                        for (ci in groupCells) cellStates[ci] = 0
+                        cellStates[kb.cellIdx] = 1
+                        selectedKeypadIndex = kb.cellIdx
+                    }
                     for (item in allBtnItems) {
                         item.btn.isSelected = cellStates[item.cellIdx] == 1
                     }
