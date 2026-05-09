@@ -334,7 +334,30 @@ class MainActivity : AppCompatActivity() {
         val frame = ByteArray(9)
         frame[0] = FRAME_H1.toByte()
         frame[1] = FRAME_H2.toByte()
-        val matrixVal = if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
+        val matrixVal = when (switchZone) {
+            0 -> {
+                val takePos = when {
+                    cellStates[0] != 0 -> 0
+                    cellStates[1] != 0 -> 1
+                    else -> 0
+                }
+                val liftPos = when {
+                    cellStates[2] != 0 -> 0
+                    cellStates[3] != 0 -> 1
+                    cellStates[4] != 0 -> 1
+                    else -> 0
+                }
+                val rodPos = when {
+                    cellStates[5] != 0 -> 1
+                    cellStates[6] != 0 -> 2
+                    else -> 0
+                }
+                takePos * 8 + liftPos * 4 + rodPos
+            }
+            1 -> if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
+            2 -> if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
+            else -> 0
+        }
         val modeVal = switchZone * 4 + switchChannel * 2 + switchChassis
         frame[2] = ((matrixVal shl 4) or (modeVal and 0x0F)).toByte()
         var btnByte = 0

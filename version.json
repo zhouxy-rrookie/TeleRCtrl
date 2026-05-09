@@ -1,6 +1,6 @@
 {
-  "versionCode": 27,
-  "versionName": "1.10.3",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.3/app-debug.apk",
-  "releaseNotes": "移除左油门死区\n- 油门轴(axisY)移除0.14死区，转向/横移/升降保留死区"
+  "versionCode": 28,
+  "versionName": "1.10.4",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.4/app-debug.apk",
+  "releaseNotes": "一区matrixVal改为2×2×4编码\n- 取杆/收杆(1bit) × 抬升低/非低(1bit) × 换杆空/1/2/保留(2bit) = 16组合\n- 4位可表示，无需改UI"
 }
