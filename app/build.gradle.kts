@@ -11,8 +11,8 @@ android {
         applicationId = "com.ek.blectr"
         minSdk = 24
         targetSdk = 34
-        versionCode = 28
-        versionName = "1.10.4"
+        versionCode = 29
+        versionName = "1.10.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

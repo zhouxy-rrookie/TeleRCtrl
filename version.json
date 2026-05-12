@@ -1,6 +1,6 @@
 {
-  "versionCode": 28,
-  "versionName": "1.10.4",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.4/app-debug.apk",
-  "releaseNotes": "一区matrixVal改为2×2×4编码\n- 取杆/收杆(1bit) × 抬升低/非低(1bit) × 换杆空/1/2/保留(2bit) = 16组合\n- 4位可表示，无需改UI"
+  "versionCode": 29,
+  "versionName": "1.10.5",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.5/app-debug.apk",
+  "releaseNotes": "一区matrixVal改为2×4×2编码\n- take(2)×lift(4:低/中/高/空)×rod(2:换杆1/2)=16组合"
 }

@@ -341,18 +341,21 @@ class MainActivity : AppCompatActivity() {
                     cellStates[1] != 0 -> 1
                     else -> 0
                 }
-                val liftPos = when {
+                val rodEmpty = cellStates[5] == 0 && cellStates[6] == 0
+                val liftPos = if (rodEmpty) {
+                    3
+                } else when {
                     cellStates[2] != 0 -> 0
                     cellStates[3] != 0 -> 1
-                    cellStates[4] != 0 -> 1
+                    cellStates[4] != 0 -> 2
                     else -> 0
                 }
                 val rodPos = when {
-                    cellStates[5] != 0 -> 1
-                    cellStates[6] != 0 -> 2
+                    cellStates[5] != 0 -> 0
+                    cellStates[6] != 0 -> 1
                     else -> 0
                 }
-                takePos * 8 + liftPos * 4 + rodPos
+                takePos * 8 + liftPos * 2 + rodPos
             }
             1 -> if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
             2 -> if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
