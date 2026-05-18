@@ -1,6 +1,6 @@
 {
-  "versionCode": 29,
-  "versionName": "1.10.5",
+  "versionCode": 30,
+  "versionName": "1.10.6",
   "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.5/app-debug.apk",
-  "releaseNotes": "一区matrixVal改为2×4×2编码\n- take(2)×lift(4:低/中/高/空)×rod(2:换杆1/2)=16组合"
+  "releaseNotes": "\u4fee\u590d\uff1a\u914d\u7f6e\u754c\u9762\u683c\u5b50\u72b6\u6001\u4e0d\u540c\u6b65Bug\n- \u6253\u5f00\u914d\u7f6e\u754c\u9762\u65f6\u81ea\u52a8\u540c\u6b65\u5b9e\u9645\u72b6\u6001\u5230UI\u663e\u793a"
 }
