@@ -1,6 +1,6 @@
 {
-  "versionCode": 30,
-  "versionName": "1.10.6",
-  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.5/app-debug.apk",
-  "releaseNotes": "\u4fee\u590d\uff1a\u914d\u7f6e\u754c\u9762\u683c\u5b50\u72b6\u6001\u4e0d\u540c\u6b65Bug\n- \u6253\u5f00\u914d\u7f6e\u754c\u9762\u65f6\u81ea\u52a8\u540c\u6b65\u5b9e\u9645\u72b6\u6001\u5230UI\u663e\u793a"
+  "versionCode": 31,
+  "versionName": "1.10.7",
+  "apkUrl": "https://github.com/zhouxy-rrookie/TeleRCtrl/releases/download/v1.10.7/app-debug.apk",
+  "releaseNotes": "\u65b0\u589e\u7ea2\u84dd\u65b9\u5207\u6362\u3001\u4e09\u533a\u9ed8\u8ba4\u653b\u51fb\u4f4e"
 }
