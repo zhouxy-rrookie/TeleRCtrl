@@ -13,6 +13,7 @@ android {
         targetSdk = 34
         versionCode = 29
         versionName = "1.10.5"
+        manifestPlaceholders["appName"] = "etel${versionName}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

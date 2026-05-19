@@ -74,6 +74,20 @@ bool  tele_alive(tele_protocol_t *p, uint32_t tick_ms, uint32_t timeout_ms);
 void  tele_reset(tele_protocol_t *p);
 void  tele_config_ack(tele_protocol_t *p);
 
+/* ───── Zone 1 helpers (takePos × 6 + liftPos × 2 + rodPos, 12 combos) ───── */
+
+static inline uint8_t zone1_take(uint8_t m)   { return m / 6; }
+static inline uint8_t zone1_lift(uint8_t m)   { return (m % 6) / 2; }
+static inline uint8_t zone1_rod(uint8_t m)    { return m % 2; }
+
+/* ───── Zone 3 helpers (topPos × 3 + bottomPos, 12 combos) ───── */
+
+#define ZONE3_TOP_COUNT  4
+#define ZONE3_BOTTOM_COUNT 3
+
+static inline uint8_t zone3_top(uint8_t m)   { return (m / ZONE3_BOTTOM_COUNT) & 0x03; }
+static inline uint8_t zone3_bottom(uint8_t m) { return m % ZONE3_BOTTOM_COUNT; }
+
 /* ───── Helpers ───── */
 
 static inline int8_t tele_apply_dead_zone(int8_t val) {

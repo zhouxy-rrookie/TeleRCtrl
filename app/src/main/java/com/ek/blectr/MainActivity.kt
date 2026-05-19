@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
     private var switchChannel = 0
     private var switchZone = 0
     private var processedVideoEnabled = false
+    private var isRedTeam = false
 
     companion object {
         private const val STREAM_INTERVAL_MS = 50L
@@ -341,24 +342,35 @@ class MainActivity : AppCompatActivity() {
                     cellStates[1] != 0 -> 1
                     else -> 0
                 }
-                val rodEmpty = cellStates[5] == 0 && cellStates[6] == 0
-                val liftPos = if (rodEmpty) {
-                    3
-                } else when {
+                val liftPos = when {
                     cellStates[2] != 0 -> 0
                     cellStates[3] != 0 -> 1
                     cellStates[4] != 0 -> 2
                     else -> 0
                 }
                 val rodPos = when {
-                    cellStates[5] != 0 -> 0
                     cellStates[6] != 0 -> 1
                     else -> 0
                 }
                 takePos * 8 + liftPos * 2 + rodPos
             }
             1 -> if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
-            2 -> if (selectedKeypadIndex >= 0) selectedKeypadIndex else 0
+            2 -> {
+                val topPos = when {
+                    cellStates[0] != 0 -> 0
+                    cellStates[1] != 0 -> 1
+                    cellStates[2] != 0 -> 2
+                    cellStates[3] != 0 -> 3
+                    else -> 0
+                }
+                val bottomPos = when {
+                    cellStates[4] != 0 -> 0
+                    cellStates[5] != 0 -> 1
+                    cellStates[6] != 0 -> 2
+                    else -> 0
+                }
+                topPos * 4 + bottomPos
+            }
             else -> 0
         }
         val modeVal = switchZone * 4 + switchChannel * 2 + switchChassis
@@ -496,7 +508,7 @@ class MainActivity : AppCompatActivity() {
             0 -> {
                 buildRow(listOf("\u53D6\u6746", "\u6536\u6746"), 0, intArrayOf(0, 1))
                 buildRow(listOf("\u62AC\u5347\u4F4E", "\u62AC\u5347\u4E2D", "\u62AC\u5347\u9AD8"), 2, intArrayOf(2, 3, 4))
-                buildRow(listOf("\u6362\u67461", "\u6362\u67462"), 5, intArrayOf(5, 6), toggleable = true)
+                buildRow(listOf("\u6362\u6746", "\u6362\u6746\u7A7A"), 6, intArrayOf(6, 7))
             }
             1 -> {
                 buildRow(listOf("\u6885\u6797\u4F4E", "\u6885\u6797\u4E2D", "\u6885\u6797\u9AD8"), 0, intArrayOf(0, 1, 2, 3, 4, 5))
@@ -509,7 +521,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        if (switchZone == 0) {
+            cellStates[7] = 1
+            selectedKeypadIndex = 7
+        }
+        if (switchZone == 2 && cellStates.all { it == 0 }) {
+            cellStates[2] = 1
+            selectedKeypadIndex = 2
+        }
+
         val allBtnItems = groups.flatMap { it.first }
+        for (item in allBtnItems) {
+            item.btn.isSelected = cellStates[item.cellIdx] == 1
+        }
         for ((btns, groupCells, toggleable) in groups) {
             for ((btnIdx, kb) in btns.withIndex()) {
                 kb.btn.setOnClickListener {
@@ -523,6 +547,41 @@ class MainActivity : AppCompatActivity() {
                     }
                     for (item in allBtnItems) {
                         item.btn.isSelected = cellStates[item.cellIdx] == 1
+                    }
+                }
+            }
+        }
+
+        if (switchZone == 0) {
+            val updateVisuals = {
+                for (item in allBtnItems) {
+                    item.btn.isSelected = cellStates[item.cellIdx] == 1
+                }
+            }
+            for ((btns, _, _) in groups) {
+                for (kb in btns) {
+                    if (kb.cellIdx == 6) {
+                        kb.btn.setOnTouchListener { _, event ->
+                            when (event.actionMasked) {
+                                MotionEvent.ACTION_DOWN -> {
+                                    cellStates[6] = 1
+                                    cellStates[7] = 0
+                                    updateVisuals()
+                                }
+                                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                                    cellStates[6] = 0
+                                    cellStates[7] = 1
+                                    updateVisuals()
+                                }
+                            }
+                            true
+                        }
+                    } else if (kb.cellIdx == 7) {
+                        kb.btn.setOnClickListener {
+                            cellStates[6] = 0
+                            cellStates[7] = 1
+                            updateVisuals()
+                        }
                     }
                 }
             }
@@ -618,9 +677,20 @@ class MainActivity : AppCompatActivity() {
 Byte 0-1: 帧头 0x5B 0x5B
 Byte 8:   帧尾 0x2B
 
-Byte 2 高4bit: 矩阵选中键 (0~11)
-  0=1, 1=2, 2=3, 3=A, 4=4, 5=5, 6=6,
-  7=B, 8=7, 9=8, 10=9, 11=C
+Byte 2 高4bit: 矩阵值 (0~11, 按区解码)
+
+一区: takePos×6 + liftPos×2 + rodPos
+  takePos  0=取杆  1=收杆
+  liftPos  0=低  1=中  2=高
+  rodPos   0=换杆空  1=换杆
+
+二区: 索引 0~5
+  0=梅林低  1=梅林中  2=梅林高
+  3=回收   4=放回    5=越区
+
+三区: topPos×4 + bottomPos
+  topPos    0=R2高 1=R2低 2=攻击低 3=攻击高
+  bottomPos 0=放块 1=捡块 2=放杆
 
 Byte 2 低4bit: 模式 (zone*4+channel*2+chassic)
   chassis: 底盘=0, 任务=1
@@ -758,12 +828,30 @@ Byte 1~3: 每个格子 2bit, 从高到低排列
             }
         }
 
-        for (row in 0 until 4) {
+        // Team toggle
+        val teamBtn = TextView(this).apply {
+            text = if (isRedTeam) "红方" else "蓝方"
+            gravity = Gravity.CENTER
+            textSize = 18f
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            setPadding(0, 0, 0, (16 * density).toInt())
+            setTextColor(Color.parseColor(if (isRedTeam) "#FF6666" else "#6688FF"))
+            setOnClickListener {
+                isRedTeam = !isRedTeam
+                showConfigDialog()
+            }
+        }
+        root.addView(teamBtn)
+
+        for (row in 3 downTo 0) {
             val rowLayout = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
             }
             for (col in 0 until 3) {
-                rowLayout.addView(cellViews[row * 3 + col])
+                val colIdx = if (isRedTeam) (2 - col) else col
+                val idx = row * 3 + colIdx
+                rowLayout.addView(cellViews[idx])
+                cellViews[idx].updateAppearance(idx)
             }
             root.addView(rowLayout)
         }
